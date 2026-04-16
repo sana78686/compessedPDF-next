@@ -6,10 +6,19 @@ Next.js 15 app with **server-side rendering** for CMS pages (blog, legal, dynami
 
 ```bash
 cp .env.example .env.local
-# Edit NEXT_PUBLIC_CMS_API_URL and NEXT_PUBLIC_SITE_DOMAIN
+# Edit NEXT_PUBLIC_CMS_API_URL, NEXT_PUBLIC_SITE_DOMAIN, NEXT_PUBLIC_SITE_ORIGIN (see below)
 npm install
 npm run dev
 ```
+
+### `NEXT_PUBLIC_SITE_ORIGIN` (recommended)
+
+- **What it is:** The full public site URL **without a trailing slash**, e.g. `https://www.compresspdf.id` or `https://compresspdf.id`.
+- **Why:** Next.js uses it for `metadataBase`, Open Graph, `sitemap.xml`, `robots.txt`, and SSR absolute URLs. It should be the **one canonical host** you want in Google (match **www** or **non-www** to your nginx/Plesk redirect).
+- **Live deploy:** Copy **`.env.production.example`** → **`.env.production`** on the server, edit the values, then **`npm run build`** and restart Node. Or set the same keys in **Plesk → Node.js → Environment variables** (no file needed).
+- **`NEXT_PUBLIC_*` note:** These are inlined at **build** time. If you change them on the server, run **`npm run build`** again before restarting.
+
+After deploy, confirm the dynamic sitemap lists your preferred host (same value as `NEXT_PUBLIC_SITE_ORIGIN`), e.g. `curl -s https://compresspdf.id/sitemap.xml | head` should include `<loc>https://compresspdf.id/</loc>` and `<loc>https://compresspdf.id/blog</loc>`. If Ahrefs still reports “pages removed from sitemaps,” run a new crawl after DNS and env match.
 
 Open **http://localhost:3001** (not 3000 — see below).
 
@@ -26,7 +35,19 @@ Your Laravel **CMS API** (`compressedPDF-react` / Vite) often uses **`http://loc
 
 - `npm run dev` — development
 - `npm run build` — production build
+- `npm run build:clean` — **delete `.next` then build** (use on **Windows** if you see `PageNotFoundError` / `ENOENT` / “Cannot find module for page” during `Collecting page data`)
+- `npm run clean` — remove `.next` only
 - `npm start` — run production server after build
+
+### Windows: build fails with “Cannot find module for page” (ENOENT)
+
+This usually means a **stale or half-written `.next` folder** (crash, antivirus, OneDrive, or path quirks). Run:
+
+```bash
+npm run build:clean
+```
+
+Or manually delete the **`compressedpdf-next/.next`** directory, then `npm run build` again. Close any running `npm run dev` first.
 
 ## Relation to `compressedPDF-react`
 
@@ -72,6 +93,7 @@ Then **Restart App** in Plesk. The server reads **`PORT`** from the environment 
 4. Under **environment variables** / **Custom environment variables**, add at least:
    - `NODE_ENV` = `production`
    - `NEXT_PUBLIC_SITE_DOMAIN` = `my.compresspdf.id` (your real hostname)
+   - `NEXT_PUBLIC_SITE_ORIGIN` = `https://www.my.compresspdf.id` or `https://my.compresspdf.id` (same host users type; no trailing slash)
    - `NEXT_PUBLIC_CMS_API_URL` = your Laravel API base, e.g. `https://app.apimstec.com` (no trailing slash)
 5. **Apache & nginx** (or **Hosting Settings**): ensure the domain is set to **proxy** to the Node.js app (wording varies: e.g. “Serve Node.js application”, “Proxy mode”, or nginx `proxy_pass` to the port/socket Plesk shows). If the domain still shows a default Plesk/Apache page, the request is not reaching Node yet.
 6. Click **Restart App** (or **Enable Node.js** if it was off).

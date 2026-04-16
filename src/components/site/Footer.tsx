@@ -125,7 +125,7 @@ export default function Footer({
             {langOpen && (
               <ul className="footer-lang-menu" role="listbox">
                 {supportedLangs.map((l) => (
-                  <li key={l} role="option">
+                  <li key={l} role="option" aria-selected={effectiveLang === l ? true : false}>
                     <a
                       href={buildLangSwitchHref(pathname, effectiveLang, l)}
                       className="footer-lang-item"

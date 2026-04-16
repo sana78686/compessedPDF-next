@@ -536,7 +536,9 @@ export default function HomePageClient() {
           <>
             {/* SEO: Upload section first – main CTA above the fold */}
             <section id="compress-tool" className="landing-upload-section landing-upload-section--first" aria-labelledby="landing-upload-h1">
-              <h1 id="landing-upload-h1" className="landing-upload-h1">{COMPRESS_PDF_EN}</h1>
+              <h1 id="landing-upload-h1" className="landing-upload-h1">
+                {t('seoHeroH1')}
+              </h1>
               <p id="landing-select-heading" className="landing-upload-heading">{t('landing.readySubtitle')}</p>
               <div
                 className={`upload-zone ${isDragging ? 'upload-zone--dragging' : ''}`}

@@ -15,6 +15,8 @@ export default {
     home: 'Beranda',
   },
   title: 'Compress PDF files',
+  /** Home `<title>`, Open Graph, and landing `<h1>` — matches legacy SEO wording. */
+  seoHeroH1: 'Kompres pdf - Compress PDF Free Online',
   subtitle: 'Kurangi ukuran file sambil menjaga kualitas PDF sebaik mungkin.',
   selectPdf: 'Pilih file PDF',
   orDrop: 'atau letakkan PDF di sini',

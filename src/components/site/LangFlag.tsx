@@ -1,4 +1,4 @@
-import { langToCountryCode } from '@/i18n/langMeta'
+import { langToCountryCode, langFlagAlt } from '@/i18n/langMeta'
 
 type LangFlagProps = {
   lang: string
@@ -13,7 +13,9 @@ export default function LangFlag({ lang, width = 22, className = '' }: LangFlagP
   const code = langToCountryCode[lang as keyof typeof langToCountryCode] || 'un'
   const h = Math.round((width * 15) / 20)
   const src = `https://flagcdn.com/w40/${code}.png`
-  const alt = ''
+  const alt =
+    langFlagAlt[lang as keyof typeof langFlagAlt] ||
+    (code === 'un' ? 'Language' : `Flag (${code})`)
 
   return (
     <img

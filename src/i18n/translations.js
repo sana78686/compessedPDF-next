@@ -19,6 +19,8 @@ export const translations = {
       home: 'Home',
     },
     title: 'Compress PDF files',
+    /** Home `<title>`, Open Graph, and landing `<h1>`. */
+    seoHeroH1: 'Compress PDF Free Online',
     subtitle: 'Reduce file size while optimizing for maximal PDF quality.',
     selectPdf: 'Select PDF files',
     orDrop: 'or drop PDFs here',

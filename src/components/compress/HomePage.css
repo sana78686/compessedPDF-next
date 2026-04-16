@@ -46,6 +46,25 @@
   flex-shrink: 0;
 }
 
+.header-primary-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.header-primary-links a {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.header-primary-links a:hover {
+  color: var(--accent-red);
+}
+
 .header-cms-nav {
   flex: 1 1 auto;
   min-width: 0;

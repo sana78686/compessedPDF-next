@@ -11,3 +11,9 @@ export const langShortLabel = {
   id: 'ID',
   en: 'EN',
 }
+
+/** Accessible `alt` for flag images (Ahrefs / WCAG). */
+export const langFlagAlt = {
+  id: 'Indonesian flag',
+  en: 'United Kingdom flag',
+}

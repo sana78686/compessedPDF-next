@@ -106,6 +106,11 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <header className="header">
         <div className="header-inner header-inner--minimal">
           <BrandLogo href={`${lp}/`} ariaLabel={t('nav.home')} text={COMPRESS_PDF_EN} />
+          <nav className="header-primary-links" aria-label="Site">
+            <Link href={`${lp}/blog`}>{t('footerBlog')}</Link>
+            <Link href={`${lp}/contact`}>{t('footerContact')}</Link>
+            <Link href={`${lp}/tools`}>{t('nav.allTools')}</Link>
+          </nav>
           {headerCmsPages.length > 0 && (
             <nav className="header-cms-nav" aria-label="Site pages">
               <ul className="header-cms-nav-list">
@@ -142,7 +147,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
               {langDropdownOpen && (
                 <ul className="lang-dropdown-menu" role="listbox">
                   {supportedLangs.map((l) => (
-                    <li key={l} role="option" aria-selected={lang === l}>
+                    <li key={l} role="option" aria-selected={lang === l ? true : false}>
                       <a
                         href={buildLangSwitchHref(pathname, lang, l)}
                         className={`lang-dropdown-item ${lang === l ? 'lang-dropdown-item--active' : ''}`}
