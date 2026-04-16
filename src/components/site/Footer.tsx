@@ -143,6 +143,7 @@ export default function Footer({
             )}
           </div>
           <div className="footer-social-copy">
+            {/* Social icons — restore when real profile URLs are ready
             <nav className="footer-social" aria-label="Social links">
               <a href="#twitter" aria-label="X (Twitter)"><span className="footer-social-icon">𝕏</span></a>
               <a href="#facebook" aria-label="Facebook"><span className="footer-social-icon">f</span></a>
@@ -150,6 +151,7 @@ export default function Footer({
               <a href="#instagram" aria-label="Instagram"><span className="footer-social-icon">📷</span></a>
               <a href="#tiktok" aria-label="TikTok"><span className="footer-social-icon">♪</span></a>
             </nav>
+            */}
             <p className="footer-copy">
               <span>{t('footerCopyrightPrefix')}</span>
               <a
