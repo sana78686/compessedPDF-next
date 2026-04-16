@@ -32,9 +32,6 @@ export function buildCompressPdfBreadcrumbItems(pathname, t) {
   const home = { label: t('nav.home'), to: `${lp}/` }
   const join = (path) => `${lp}${path === '/' ? '' : path}`
 
-  if (rest === '/tools') {
-    return [home, { label: t('nav.allTools') }]
-  }
   if (rest === '/compress') {
     return [home, { label: t('nav.compress') }]
   }
@@ -75,7 +72,7 @@ export function buildCompressPdfBreadcrumbItems(pathname, t) {
   const single = /^\/([^/]+)$/.exec(rest)
   if (single) {
     const seg = single[1]
-    const known = new Set(['tools', 'compress', 'blog', 'contact'])
+    const known = new Set(['compress', 'blog', 'contact'])
     if (!known.has(seg)) {
       return [home, { label: slugLabel(seg) }]
     }

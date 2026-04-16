@@ -72,6 +72,19 @@
   box-shadow: 0 6px 20px rgba(0, 200, 181, 0.3);
 }
 
+.tool-card--soon {
+  cursor: default;
+  opacity: 0.82;
+  background: #f9fafb;
+}
+
+.tool-card--soon:hover {
+  border-color: #e5e7eb;
+  background: #f9fafb;
+  background-image: none;
+  box-shadow: none;
+}
+
 .tool-card-icon {
   font-size: 2rem;
   line-height: 1;

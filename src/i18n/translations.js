@@ -20,7 +20,7 @@ export const translations = {
     },
     title: 'Compress PDF files',
     /** Home `<title>`, Open Graph, and landing `<h1>`. */
-    seoHeroH1: 'Compress PDF Free Online',
+    seoHeroH1: 'Compress PDF',
     subtitle: 'Reduce file size while optimizing for maximal PDF quality.',
     selectPdf: 'Select PDF files',
     orDrop: 'or drop PDFs here',
@@ -69,6 +69,9 @@ export const translations = {
     footerAbout: 'About us',
     footerContact: 'Contact us',
     footerBlog: 'Blog',
+    /** Primary tool — linked from header/footer for internal SEO inlinks to `/compress`. */
+    footerCompressPdf: 'Compress PDF',
+    primaryNavAria: 'Main menu',
     footerOther: 'OTHER',
     footerCopyrightPrefix: '© compressedPDF 2026 ® – ',
     footerPoweredBy: 'powered by Apimstec',
@@ -136,6 +139,7 @@ export const translations = {
     tools: {
       pageTitle: 'All PDF Tools',
       frequentlyUsed: 'Frequently used',
+      comingSoonTitle: 'Coming soon — not available yet',
       mergePdf: 'Merge PDF',
       splitPdf: 'Split PDF',
       compressPdf: 'Compress PDF',

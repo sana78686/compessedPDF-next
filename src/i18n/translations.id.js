@@ -16,7 +16,7 @@ export default {
   },
   title: 'Compress PDF files',
   /** Home `<title>`, Open Graph, and landing `<h1>` — matches legacy SEO wording. */
-  seoHeroH1: 'Kompres pdf - Compress PDF Free Online',
+  seoHeroH1: 'Kompres PDF',
   subtitle: 'Kurangi ukuran file sambil menjaga kualitas PDF sebaik mungkin.',
   selectPdf: 'Pilih file PDF',
   orDrop: 'atau letakkan PDF di sini',
@@ -65,6 +65,8 @@ export default {
   footerAbout: 'Tentang kami',
   footerContact: 'Hubungi kami',
   footerBlog: 'Blog',
+  footerCompressPdf: 'Kompres PDF',
+  primaryNavAria: 'Menu utama',
   footerOther: 'LAINNYA',
   footerCopyrightPrefix: '© compressedPDF 2026 ® – ',
   footerPoweredBy: 'didukung oleh Apimstec',
@@ -132,6 +134,7 @@ export default {
   tools: {
     pageTitle: 'Semua alat PDF',
     frequentlyUsed: 'Sering digunakan',
+    comingSoonTitle: 'Segera hadir — belum tersedia',
     mergePdf: 'Gabung PDF',
     splitPdf: 'Pisah PDF',
     compressPdf: 'Compress PDF',

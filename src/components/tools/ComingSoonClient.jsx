@@ -23,8 +23,8 @@ export default function ComingSoonClient() {
         <p className="coming-soon-text">
           This tool is under development. Try our Compress PDF tool in the meantime.
         </p>
-        <Link href={`${lp}/tools`} className="coming-soon-btn">
-          All PDF Tools
+        <Link href={`${lp}/compress`} className="coming-soon-btn">
+          Compress PDF
         </Link>
       </main>
     </div>

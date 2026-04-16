@@ -98,7 +98,6 @@ export default function HomePageClient() {
   const [landingCards, setLandingCards] = useState([])
   /** CMS “Home page” rich text (locale-specific), from public /home-content */
   const [cmsHomeHtml, setCmsHomeHtml] = useState('')
-  const [howSection, setHowSection] = useState(null)
   const [cmsSections, setCmsSections] = useState([])
   const [homeJsonLd, setHomeJsonLd] = useState(null)
   const [toolJsonLd, setToolJsonLd] = useState(null)
@@ -168,14 +167,12 @@ export default function HomePageClient() {
         if (cancelled) return
         setLandingFaq(Array.isArray(faqRes.faq) ? faqRes.faq : [])
         setLandingCards(Array.isArray(cardsRes.cards) ? cardsRes.cards : [])
-        setHowSection(cardsRes?.section && typeof cardsRes.section === 'object' ? cardsRes.section : null)
         setCmsSections(Array.isArray(sectionsRes.sections) ? sectionsRes.sections : [])
       })
       .catch(() => {
         if (cancelled) return
         setLandingFaq([])
         setLandingCards([])
-        setHowSection(null)
         setCmsSections([])
       })
     return () => { cancelled = true }
@@ -588,7 +585,7 @@ export default function HomePageClient() {
 
             {showBelowFold && (
               <Suspense fallback={null}>
-                <LandingBelowFold t={t} cards={landingCards} howSection={howSection} sections={cmsSections} />
+                <LandingBelowFold t={t} cards={landingCards} sections={cmsSections} />
               </Suspense>
             )}
           </>

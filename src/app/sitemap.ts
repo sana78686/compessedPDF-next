@@ -28,12 +28,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '', priority: 1, changeFrequency: 'weekly' as const },
     { path: '/blog', priority: 0.9, changeFrequency: 'weekly' as const },
     { path: '/contact', priority: 0.85, changeFrequency: 'monthly' as const },
-    { path: '/tools', priority: 0.85, changeFrequency: 'monthly' as const },
     { path: '/compress', priority: 0.9, changeFrequency: 'weekly' as const },
     { path: '/en', priority: 1, changeFrequency: 'weekly' as const },
     { path: '/en/blog', priority: 0.9, changeFrequency: 'weekly' as const },
     { path: '/en/contact', priority: 0.85, changeFrequency: 'monthly' as const },
-    { path: '/en/tools', priority: 0.85, changeFrequency: 'monthly' as const },
     { path: '/en/compress', priority: 0.9, changeFrequency: 'weekly' as const },
   ]
 

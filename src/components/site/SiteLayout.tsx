@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, lazy, Suspense, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslation } from '@/i18n/useTranslation'
@@ -14,6 +14,7 @@ import { COMPRESS_PDF_EN } from '@/constants/brand'
 import LangFlag from './LangFlag'
 import { ucWords } from '@/utils/ucWords'
 import '@/components/compress/HomePage.css'
+import Footer from './Footer'
 
 function faqListHasContent(res: { faq?: { question?: string; answer?: string }[] }) {
   const list = res?.faq
@@ -27,8 +28,6 @@ function faqListHasContent(res: { faq?: { question?: string; answer?: string }[]
     return strip(item.question).length > 0 || strip(item.answer).length > 0
   })
 }
-
-const Footer = lazy(() => import('./Footer'))
 
 function buildLangSwitchHref(pathname: string, currentLang: string, targetLang: string) {
   let suffix = pathname
@@ -106,10 +105,8 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <header className="header">
         <div className="header-inner header-inner--minimal">
           <BrandLogo href={`${lp}/`} ariaLabel={t('nav.home')} text={COMPRESS_PDF_EN} />
-          <nav className="header-primary-links" aria-label="Site">
-            <Link href={`${lp}/blog`}>{t('footerBlog')}</Link>
-            <Link href={`${lp}/contact`}>{t('footerContact')}</Link>
-            <Link href={`${lp}/tools`}>{t('nav.allTools')}</Link>
+          <nav className="header-primary-links" aria-label={t('primaryNavAria')}>
+            <Link href={`${lp}/compress`}>{t('footerCompressPdf')}</Link>
           </nav>
           {headerCmsPages.length > 0 && (
             <nav className="header-cms-nav" aria-label="Site pages">
@@ -177,16 +174,14 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         {children}
       </main>
 
-      <Suspense fallback={<div className="footer-placeholder" aria-hidden="true" />}>
-        <Footer
-          lang={lang}
-          pathname={pathname}
-          t={t}
-          footerPages={footerPages}
-          legalVisibility={legalVisibility}
-          showFaqLink={showFaqLink}
-        />
-      </Suspense>
+      <Footer
+        lang={lang}
+        pathname={pathname}
+        t={t}
+        footerPages={footerPages}
+        legalVisibility={legalVisibility}
+        showFaqLink={showFaqLink}
+      />
     </div>
   )
 }

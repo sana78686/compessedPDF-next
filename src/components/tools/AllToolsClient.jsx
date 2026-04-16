@@ -1,8 +1,12 @@
 'use client'
 
+/**
+ * All-tools grid UI — not mounted by any route right now (no `/tools` page).
+ * Unfinished tools are not links (no `/en/[tool]` route until you copy from `src/templates/en-tool-coming-soon-page.tsx`).
+ */
+
 import { useEffect } from 'react'
 import { useTranslation } from '@/i18n/useTranslation'
-import { langPrefix } from '@/i18n/translations'
 import { usePathLang } from '@/hooks/usePathLang'
 import { COMPRESS_PDF_EN } from '@/constants/brand'
 import '../compress/HomePage.css'
@@ -43,11 +47,7 @@ export default function AllToolsClient() {
     document.documentElement.lang = lang
   }, [lang])
 
-  const getToolHref = (tool) => {
-    const lp = langPrefix(lang)
-    if (tool.available && tool.slug === '') return `${lp}/`
-    return `${lp}/${tool.slug}`
-  }
+  const compressHref = lang === 'en' ? '/en' : '/'
 
   return (
     <div className="all-tools-page home-page">
@@ -56,25 +56,38 @@ export default function AllToolsClient() {
         <p className="all-tools-subtitle">{t('tools.frequentlyUsed')}</p>
 
         <div className="tools-grid">
-          {TOOLS_LIST.map((tool) => (
-            <a
-              key={tool.slug || 'compress'}
-              href={getToolHref(tool)}
-              className={`tool-card ${tool.available ? 'tool-card--available' : ''}`}
-            >
-              <span className="tool-card-icon" aria-hidden>
-                {tool.available && tool.slug === '' ? '📦' : '📄'}
-              </span>
-              <span className="tool-card-label">
-                {tool.slug === '' ? COMPRESS_PDF_EN : t(tool.labelKey)}
-              </span>
-              {tool.available && (
-                <span className="tool-card-badge" aria-hidden>
-                  ✓
+          {TOOLS_LIST.map((tool) => {
+            const key = tool.slug || 'compress'
+            if (tool.available && tool.slug === '') {
+              return (
+                <a
+                  key={key}
+                  href={compressHref}
+                  className="tool-card tool-card--available"
+                >
+                  <span className="tool-card-icon" aria-hidden>
+                    📦
+                  </span>
+                  <span className="tool-card-label">{COMPRESS_PDF_EN}</span>
+                  <span className="tool-card-badge" aria-hidden>
+                    ✓
+                  </span>
+                </a>
+              )
+            }
+            return (
+              <div
+                key={key}
+                className="tool-card tool-card--soon"
+                title={t('tools.comingSoonTitle')}
+              >
+                <span className="tool-card-icon" aria-hidden>
+                  📄
                 </span>
-              )}
-            </a>
-          ))}
+                <span className="tool-card-label">{t(tool.labelKey)}</span>
+              </div>
+            )
+          })}
         </div>
       </main>
     </div>

@@ -1082,89 +1082,6 @@
   border: 0;
 }
 
-/* Footer – matches header, attached to site design */
-.footer {
-  border-top: 1px solid var(--border-light);
-  padding: 1.5rem 1.5rem 1.25rem;
-  background: var(--bg-header);
-  margin-top: auto;
-}
-
-.footer-inner {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-}
-
-.footer-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem 1.5rem;
-}
-
-.footer-logo {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  text-decoration: none;
-}
-
-.footer-logo:hover {
-  color: var(--accent-red);
-}
-
-.footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1.25rem;
-}
-
-.footer-links a {
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: var(--text-secondary);
-  text-decoration: none;
-}
-
-.footer-links a:hover {
-  color: var(--accent-red);
-}
-
-.footer-copy {
-  margin: 1rem 0 0;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-light);
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  text-align: center;
-}
-
-.footer p {
-  margin: 0;
-}
-
-.footer-nav {
-  margin-top: 0.75rem;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem 1.25rem;
-}
-
-.footer-nav a {
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 0.85rem;
-}
-
-.footer-nav a:hover {
-  color: var(--accent-red);
-  text-decoration: underline;
-}
-
 /* Step 2: File display + settings */
 .step-settings {
   width: 100%;
@@ -1902,10 +1819,6 @@
     justify-content: center;
   }
 
-  .footer {
-    padding: 1rem;
-    font-size: 0.875rem;
-  }
 }
 
 /* Extra small */
