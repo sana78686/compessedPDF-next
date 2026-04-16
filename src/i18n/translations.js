@@ -71,7 +71,6 @@ export const translations = {
     footerBlog: 'Blog',
     /** Primary tool — linked from header/footer for internal SEO inlinks to `/compress`. */
     footerCompressPdf: 'Compress PDF',
-    primaryNavAria: 'Main menu',
     footerOther: 'OTHER',
     footerCopyrightPrefix: '© compressedPDF 2026 ® – ',
     footerPoweredBy: 'powered by Apimstec',

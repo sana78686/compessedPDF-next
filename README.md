@@ -49,6 +49,25 @@ npm run build:clean
 
 Or manually delete the **`compressedpdf-next/.next`** directory, then `npm run build` again. Close any running `npm run dev` first.
 
+### Local dev: `Cannot find module './331.js'` (or similar chunk id)
+
+That is almost always a **corrupted or half-written `.next` cache** while Webpack is mid-build. **Stop** `npm run dev`, then:
+
+```bash
+npm run dev:clean
+```
+
+(or `npm run clean && npm run dev`). If it still happens, delete `.next` manually, restart the terminal, and run `npm run dev` again. **Do not** run two Next dev servers in the same project folder at once.
+
+### Live site looks unstyled (plain HTML) + browser shows `400` on `/_next/static/...`
+
+The HTML loads from Node, but **CSS/JS chunks are not reaching the browser**. That is **hosting / proxy / cache**, not React code:
+
+1. **Nginx / Plesk** must **proxy the entire site** to the Node process, including `/_next/static/*` and `/_next/image/*`. If only `/` is proxied and static files are served from `httpdocs`, requests for `/_next/...` may hit the wrong handler and return **400/404**.
+2. After each deploy, run **`npm run build`** in the **same folder** as `server.js`, then **restart** the Node app. **Never** mix an old `.next` folder with a new `node_modules` or vice versa.
+3. **Purge CDN / Cloudflare cache** if you use one — cached HTML can reference **old chunk filenames** that no longer exist after a new build (same symptom: lots of red errors for `.js` / `.css` under `/_next/static/`).
+4. **`NEXT_PUBLIC_SITE_ORIGIN`** must match the hostname users open (with or without `www`). Rebuild after changing any `NEXT_PUBLIC_*` variable.
+
 ## Relation to `compressedPDF-react`
 
 - **compressedPDF-react** — original Vite SPA (unchanged).

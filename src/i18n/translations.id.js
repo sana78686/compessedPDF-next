@@ -66,7 +66,6 @@ export default {
   footerContact: 'Hubungi kami',
   footerBlog: 'Blog',
   footerCompressPdf: 'Kompres PDF',
-  primaryNavAria: 'Menu utama',
   footerOther: 'LAINNYA',
   footerCopyrightPrefix: '© compressedPDF 2026 ® – ',
   footerPoweredBy: 'didukung oleh Apimstec',

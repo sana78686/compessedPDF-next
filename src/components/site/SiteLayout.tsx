@@ -105,9 +105,6 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <header className="header">
         <div className="header-inner header-inner--minimal">
           <BrandLogo href={`${lp}/`} ariaLabel={t('nav.home')} text={COMPRESS_PDF_EN} />
-          <nav className="header-primary-links" aria-label={t('primaryNavAria')}>
-            <Link href={`${lp}/compress`}>{t('footerCompressPdf')}</Link>
-          </nav>
           {headerCmsPages.length > 0 && (
             <nav className="header-cms-nav" aria-label="Site pages">
               <ul className="header-cms-nav-list">
