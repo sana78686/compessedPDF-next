@@ -63,18 +63,20 @@ function storageRelativePathFromUrl(urlString) {
 }
 
 /**
- * Image URL for the live React site: same origin /uploads/... (nginx proxies to CMS /storage).
- * CMS + API return https://{frontend}/uploads/editor/... when Domain.frontend_url is set.
+ * Image URL for SSR or explicit site origin (e.g. from NEXT_PUBLIC_SITE_ORIGIN).
+ * Same rules as {@link resolveCmsMediaUrl} in the browser.
+ * @param {string} url
+ * @param {string} [origin] - e.g. https://compresspdf.id (no trailing slash)
  */
-export function resolveCmsMediaUrl(url) {
+export function resolveCmsMediaUrlWithOrigin(url, origin) {
   if (url == null || url === '') return ''
   const s = String(url).trim()
-  const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : ''
+  const o = origin === undefined || origin === null ? '' : String(origin).trim().replace(/\/+$/, '')
 
   if (/^https?:\/\//i.test(s) || s.startsWith('//')) {
     try {
       const u = new URL(s.startsWith('//') ? `https:${s}` : s)
-      if (origin && u.origin === new URL(origin).origin) {
+      if (o && u.origin === new URL(o).origin) {
         if (u.pathname.startsWith('/uploads/') || u.pathname.startsWith('/cms-uploads/')) {
           return publicMediaProxyUrl(u.pathname.replace(/^\/+/, ''))
         }
@@ -89,8 +91,8 @@ export function resolveCmsMediaUrl(url) {
       if (USE_LEGACY_CMS_MEDIA_PROXY) {
         return publicMediaProxyUrl(rel)
       }
-      if (origin) {
-        return `${origin}/${encodePathSegments(rel)}`
+      if (o) {
+        return `${o}/${encodePathSegments(rel)}`
       }
       return publicMediaProxyUrl(rel)
     }
@@ -119,16 +121,26 @@ export function resolveCmsMediaUrl(url) {
     if (USE_LEGACY_CMS_MEDIA_PROXY) {
       return publicMediaProxyUrl(inner)
     }
-    return origin ? `${origin}/${encodePathSegments(inner)}` : publicMediaProxyUrl(inner)
+    return o ? `${o}/${encodePathSegments(inner)}` : publicMediaProxyUrl(inner)
   }
   if (path.startsWith('/media/')) {
     const base = String(CMS_API_BASE).replace(/\/$/, '')
     return `${base}${path}`
   }
   if (path.startsWith('/')) {
-    return origin ? `${origin}${path}` : path
+    return o ? `${o}${path}` : path
   }
   return path
+}
+
+/**
+ * Image URL for the live React site: same origin /uploads/... (nginx proxies to CMS /storage).
+ * CMS + API return https://{frontend}/uploads/editor/... when Domain.frontend_url is set.
+ */
+export function resolveCmsMediaUrl(url) {
+  const origin =
+    typeof window !== 'undefined' && window.location?.origin ? window.location.origin : ''
+  return resolveCmsMediaUrlWithOrigin(url, origin)
 }
 
 /**

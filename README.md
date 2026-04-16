@@ -64,6 +64,32 @@ npm run build       # required before first start
 
 Then **Restart App** in Plesk. The server reads **`PORT`** from the environment (Plesk usually sets this).
 
+### After `npm run build` — make the site visible on the domain
+
+1. Open the **Dashboard** tab (not only “Run Node.js commands”).
+2. Set **Application startup file** to **`server.js`** (the file in the same folder as `package.json`). Do **not** leave a broken path to `node_modules/next/...`.
+3. Set **Application mode** to **production**.
+4. Under **environment variables** / **Custom environment variables**, add at least:
+   - `NODE_ENV` = `production`
+   - `NEXT_PUBLIC_SITE_DOMAIN` = `my.compresspdf.id` (your real hostname)
+   - `NEXT_PUBLIC_CMS_API_URL` = your Laravel API base, e.g. `https://app.apimstec.com` (no trailing slash)
+5. **Apache & nginx** (or **Hosting Settings**): ensure the domain is set to **proxy** to the Node.js app (wording varies: e.g. “Serve Node.js application”, “Proxy mode”, or nginx `proxy_pass` to the port/socket Plesk shows). If the domain still shows a default Plesk/Apache page, the request is not reaching Node yet.
+6. Click **Restart App** (or **Enable Node.js** if it was off).
+7. Wait a few seconds, then open **https://my.compresspdf.id** (or HTTP first if SSL is not ready).
+
+If you see **502 / 503 / connection refused**, check the Node app **logs** in Plesk (same Node.js screen) and confirm **`server.js`** exists in the application root and **`npm run build`** was run in that same folder.
+
+### Plesk “default webpage” (robot) instead of your app
+
+That page is **not** from Next.js — the domain is still serving **Plesk’s static default** `index.html`, so traffic **never reaches** Node.
+
+1. **File Manager** → domain’s document root (often `httpdocs`) → **delete or rename** the default **`index.html`** (welcome page).
+2. **Domain → Apache & nginx** (or hosting): enable **proxy to Node.js** / **Proxy mode** (exact name depends on Plesk version) so requests go to the Node port, not only static files.
+3. Set **Document root** to the **`public`** subfolder under your app if Plesk asks (see orange warning on the Dashboard).
+4. Add **custom environment variables** (`NODE_ENV`, `NEXT_PUBLIC_*`), then **Restart App** and load the site again.
+
+Until the vhost **proxies** to Node, “Application will be restarted after the first request” never helps — the first request never hits Node.
+
 ### Env on the server
 
 Add **`NODE_ENV=production`** and your CMS keys in Plesk “Custom environment variables” or `.env.production`:

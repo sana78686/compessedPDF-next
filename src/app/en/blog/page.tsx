@@ -1,42 +1,16 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getBlogs } from '@/lib/cms/server'
-import { JsonLdScript } from '@/components/cms/JsonLdScript'
+import { BlogListView } from '@/components/blog/BlogListView'
+import { translations } from '@/i18n/translations'
 
 export const revalidate = 60
 
+const b = translations.en.blog
+
 export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Latest articles and updates.',
+  title: b.listTitle,
+  description: b.listIntro,
 }
 
-function normalizeBlogs(res: unknown): { id: number; title: string; slug: string }[] {
-  if (Array.isArray(res)) return res as { id: number; title: string; slug: string }[]
-  if (res && typeof res === 'object') {
-    const o = res as Record<string, unknown>
-    const raw = Array.isArray(o.blogs) ? o.blogs : Array.isArray(o.data) ? o.data : []
-    return raw as { id: number; title: string; slug: string }[]
-  }
-  return []
-}
-
-export default async function EnBlogListPage() {
-  const res = await getBlogs('en')
-  const blogs = normalizeBlogs(res)
-  const jsonLd = res && typeof res === 'object' && 'json_ld' in res ? (res as { json_ld?: unknown }).json_ld : null
-
-  return (
-    <div className="blog-list-page wrap">
-      <JsonLdScript data={jsonLd} />
-      <h1 className="blog-list-title">Blog</h1>
-      <p className="blog-list-intro">Latest articles and updates.</p>
-      <ul className="blog-list">
-        {blogs.map((b) => (
-          <li key={b.id}>
-            <Link href={`/en/blog/${encodeURIComponent(b.slug)}`}>{b.title}</Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+export default function EnBlogListPage() {
+  return <BlogListView locale="en" />
 }
