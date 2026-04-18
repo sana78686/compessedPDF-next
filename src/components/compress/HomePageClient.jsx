@@ -122,6 +122,8 @@ export default function HomePageClient() {
   const [showBelowFold, setShowBelowFold] = useState(false)
   const [landingFaq, setLandingFaq] = useState([])
   const [landingCards, setLandingCards] = useState([])
+  /** Optional CMS “how it works” block from home-cards when no dynamic sections */
+  const [howSection, setHowSection] = useState(null)
   /** CMS “Home page” rich text (locale-specific), from public /home-content */
   const [cmsHomeHtml, setCmsHomeHtml] = useState('')
   const [cmsSections, setCmsSections] = useState([])
@@ -225,12 +227,14 @@ export default function HomePageClient() {
         if (cancelled) return
         setLandingFaq(Array.isArray(faqRes.faq) ? faqRes.faq : [])
         setLandingCards(Array.isArray(cardsRes.cards) ? cardsRes.cards : [])
+        setHowSection(cardsRes?.section && typeof cardsRes.section === 'object' ? cardsRes.section : null)
         setCmsSections(Array.isArray(sectionsRes.sections) ? sectionsRes.sections : [])
       })
       .catch(() => {
         if (cancelled) return
         setLandingFaq([])
         setLandingCards([])
+        setHowSection(null)
         setCmsSections([])
       })
     return () => { cancelled = true }
@@ -638,7 +642,7 @@ export default function HomePageClient() {
             {/* SEO: Upload section first – main CTA above the fold */}
             <section id="compress-tool" className="landing-upload-section landing-upload-section--first" aria-labelledby="landing-upload-h1">
               <h1 id="landing-upload-h1" className="landing-upload-h1">
-                {t('seoHeroH1')}
+                {COMPRESS_PDF_EN}
               </h1>
               <p id="landing-select-heading" className="landing-upload-heading">{t('landing.readySubtitle')}</p>
               <div
@@ -689,7 +693,7 @@ export default function HomePageClient() {
 
             {showBelowFold && (
               <Suspense fallback={null}>
-                <LandingBelowFold t={t} cards={landingCards} sections={cmsSections} />
+                <LandingBelowFold t={t} cards={landingCards} howSection={howSection} sections={cmsSections} />
               </Suspense>
             )}
           </>

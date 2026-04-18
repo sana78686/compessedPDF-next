@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
 import { supportedLangs, langOptions, defaultLang, langPrefix as lp, writeUserLocalePreference } from '@/i18n/translations'
 import LangFlag from './LangFlag'
 import { ucWords } from '@/utils/ucWords'
@@ -126,16 +127,17 @@ export default function Footer({
               <ul className="footer-lang-menu" role="listbox">
                 {supportedLangs.map((l) => (
                   <li key={l} role="option" aria-selected={effectiveLang === l ? true : false}>
-                    <a
+                    <Link
                       href={buildLangSwitchHref(pathname, effectiveLang, l)}
                       className="footer-lang-item"
+                      scroll={false}
                       onClick={() => writeUserLocalePreference(l)}
                     >
                       <span className="footer-lang-item-flag" aria-hidden>
                         <LangFlag lang={l} width={18} />
                       </span>
                       <span>{langOptions[l as keyof typeof langOptions]?.label || l.toUpperCase()}</span>
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>

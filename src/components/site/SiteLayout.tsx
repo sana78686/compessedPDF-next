@@ -30,9 +30,9 @@ function faqListHasContent(res: { faq?: { question?: string; answer?: string }[]
 }
 
 function buildLangSwitchHref(pathname: string, currentLang: string, targetLang: string) {
-  let suffix = pathname
+  let suffix = pathname || '/'
   if (currentLang !== defaultLang) {
-    suffix = pathname.replace(new RegExp(`^/${currentLang}(/|$)`), '$1') || '/'
+    suffix = suffix.replace(new RegExp(`^/${currentLang}(/|$)`), '$1') || '/'
   }
   if (!suffix.startsWith('/')) suffix = '/' + suffix
   if (targetLang === defaultLang) return suffix
@@ -142,9 +142,10 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
                 <ul className="lang-dropdown-menu" role="listbox">
                   {supportedLangs.map((l) => (
                     <li key={l} role="option" aria-selected={lang === l ? true : false}>
-                      <a
+                      <Link
                         href={buildLangSwitchHref(pathname, lang, l)}
                         className={`lang-dropdown-item ${lang === l ? 'lang-dropdown-item--active' : ''}`}
+                        scroll={false}
                         onClick={() => {
                           writeUserLocalePreference(l)
                           setLangDropdownOpen(false)
@@ -156,7 +157,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
                         <span className="lang-dropdown-item-label">
                           {langOptions[l as keyof typeof langOptions]?.label ?? l.toUpperCase()}
                         </span>
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>

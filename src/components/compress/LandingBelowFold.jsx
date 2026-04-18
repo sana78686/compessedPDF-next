@@ -44,7 +44,7 @@ function renderMediaIcon(item, idx) {
  * Below-the-fold landing content: CMS feature cards (Use Cards) + dynamic Sections.
  * Lazy-loaded and mounted after first paint to reduce TBT on mobile.
  */
-export default function LandingBelowFold({ t, cards = [], sections = [] }) {
+export default function LandingBelowFold({ t, cards = [], howSection = null, sections = [] }) {
   const cardEmoji = (iconKey) => CARD_ICON_EMOJI[iconKey] ?? '✨'
 
   return (
@@ -84,6 +84,34 @@ export default function LandingBelowFold({ t, cards = [], sections = [] }) {
           </section>
         )
       })}
+
+      {sections.length === 0 && (
+        <section className="landing-section landing-how" aria-labelledby="landing-how-heading">
+          <h2 id="landing-how-heading" className="landing-section-title">
+            {howSection?.title?.trim?.() || t('landing.howTitle')}
+          </h2>
+          {howSection?.description?.trim?.() && (
+            <p className="landing-section-subtitle">{howSection.description.trim()}</p>
+          )}
+          <div className="landing-steps">
+            <div className="landing-step">
+              <span className="landing-step-num" aria-hidden="true">1</span>
+              <h3 className="landing-step-title">{t('landing.howStep1')}</h3>
+              <p className="landing-step-desc">{t('landing.howStep1Desc')}</p>
+            </div>
+            <div className="landing-step">
+              <span className="landing-step-num" aria-hidden="true">2</span>
+              <h3 className="landing-step-title">{t('landing.howStep2')}</h3>
+              <p className="landing-step-desc">{t('landing.howStep2Desc')}</p>
+            </div>
+            <div className="landing-step">
+              <span className="landing-step-num" aria-hidden="true">3</span>
+              <h3 className="landing-step-title">{t('landing.howStep3')}</h3>
+              <p className="landing-step-desc">{t('landing.howStep3Desc')}</p>
+            </div>
+          </div>
+        </section>
+      )}
     </>
   )
 }
