@@ -6,6 +6,13 @@ import { useTranslation } from '@/i18n/useTranslation'
 import { langPrefix } from '@/i18n/translations'
 import { usePathLang } from '@/hooks/usePathLang'
 import { getFaq, getHomeCards, getSections, getHomePageContent, getToolSchemaJsonLd } from '@/lib/cms-client'
+import {
+  setSessionFiles,
+  setSessionResults,
+  getSessionFiles,
+  getSessionResults,
+  clearCompressionSession,
+} from '@/lib/compress-session'
 import JsonLd from '@/components/JsonLd'
 import './HomePage.css'
 import '@/styles/cms-page.css'
@@ -33,11 +40,28 @@ async function getPdfWorkerSrc() {
   }
 }
 
+/** Run after first paint / when idle so file picker & navigation stay snappy. */
+function scheduleIdle(callback, timeout = 2000) {
+  if (typeof requestIdleCallback !== 'undefined') {
+    const id = requestIdleCallback(callback, { timeout })
+    return () => cancelIdleCallback(id)
+  }
+  const id = setTimeout(callback, 0)
+  return () => clearTimeout(id)
+}
+
 const STEP_UPLOAD = 1
 const STEP_SETTINGS = 2
 const STEP_RESULT = 3
 
 const MAX_PDF_FILES = 10
+
+/** Windows / some browsers omit MIME; accept by extension too. */
+function isPdfFile(f) {
+  const type = String(f?.type || '').toLowerCase()
+  if (type === 'application/pdf' || type === 'application/x-pdf') return true
+  return /\.pdf$/i.test(String(f?.name || ''))
+}
 
 function cmsHtmlHasVisibleText(html) {
   if (!html || typeof html !== 'string') return false
@@ -91,6 +115,8 @@ export default function HomePageClient() {
   /** @type {Array<{ blob: Blob, fileName: string, originalSize: number, newSize: number, percentageSaved: number }> | null} */
   const [compressionResults, setCompressionResults] = useState(null)
   const fileInputRef = useRef(null)
+  /** Latest file list for handlers — must not rely on setState updater running before router navigation. */
+  const filesRef = useRef([])
   const dragDepthRef = useRef(0)
   const [faqOpenIndex, setFaqOpenIndex] = useState(null)
   const [showBelowFold, setShowBelowFold] = useState(false)
@@ -108,6 +134,35 @@ export default function HomePageClient() {
   useEffect(() => {
     document.documentElement.lang = lang
   }, [lang])
+
+  useEffect(() => {
+    filesRef.current = files
+  }, [files])
+
+  /* Prefetch route JS so /compress and /result feel instant after upload / compress. */
+  useEffect(() => {
+    if (isHomeLanding) {
+      router.prefetch(`${lp}/compress`)
+      router.prefetch(`${lp}/compress/result`)
+    } else if (isCompressPath) {
+      router.prefetch(`${lp}/compress/result`)
+    }
+  }, [isHomeLanding, isCompressPath, router, lp])
+
+  /* Warm pdf.js + jspdf + worker while user adjusts DPI (first Compress click avoids cold import). */
+  useEffect(() => {
+    if (!isCompressPath) return undefined
+    let cancelled = false
+    const cancel = scheduleIdle(() => {
+      void Promise.all([import('pdfjs-dist'), import('jspdf')]).then(() => {
+        if (!cancelled) void getPdfWorkerSrc()
+      })
+    }, 1200)
+    return () => {
+      cancelled = true
+      cancel()
+    }
+  }, [isCompressPath])
 
   const publicPathForSeo = pathname.split('?')[0] || '/'
 
@@ -140,17 +195,20 @@ export default function HomePageClient() {
       return undefined
     }
     let cancelled = false
-    getToolSchemaJsonLd(lang, publicPathForSeo)
-      .then((res) => {
-        if (cancelled) return
-        const graph = res?.json_ld?.['@graph']
-        setToolJsonLd(Array.isArray(graph) && graph.length > 0 ? res.json_ld : null)
-      })
-      .catch(() => {
-        if (!cancelled) setToolJsonLd(null)
-      })
+    const cancel = scheduleIdle(() => {
+      getToolSchemaJsonLd(lang, publicPathForSeo)
+        .then((res) => {
+          if (cancelled) return
+          const graph = res?.json_ld?.['@graph']
+          setToolJsonLd(Array.isArray(graph) && graph.length > 0 ? res.json_ld : null)
+        })
+        .catch(() => {
+          if (!cancelled) setToolJsonLd(null)
+        })
+    }, 2500)
     return () => {
       cancelled = true
+      cancel()
     }
   }, [isCompressPage, lang, publicPathForSeo])
 
@@ -189,60 +247,91 @@ export default function HomePageClient() {
     }
   }, [isCompressPage])
 
-  // Sync URL with state: on /compress/result with no result data -> back to settings
-  useEffect(() => {
-    if (isResultPath && (!compressionResults || compressionResults.length === 0)) {
-      router.replace(`${lp}/compress`)
-    }
-  }, [isResultPath, compressionResults, router, lang])
+  /* Do NOT sync files/results from React state into compress-session on every render:
+   * a new route mount starts with files=[] and would clear the session before hydrate runs. */
 
-  // Sync URL with state: on /compress with no files -> go to upload
+  // /compress/result: restore results from session (new page mount loses React state)
   useEffect(() => {
-    if (isCompressPath && files.length === 0) {
-      router.replace(`${lp}/`)
+    if (!isResultPath) return
+    if (compressionResults?.length) return
+    const sr = getSessionResults()
+    if (sr?.length) {
+      setCompressionResults(sr)
+      return
     }
-  }, [isCompressPath, files.length, router, lang])
+    router.replace(`${lp}/compress`)
+  }, [isResultPath, compressionResults, router, lp])
+
+  // /compress/result: restore file list for Erase → back to settings
+  useEffect(() => {
+    if (!isResultPath) return
+    if (files.length > 0) return
+    const sf = getSessionFiles()
+    if (sf.length) setFiles(sf)
+  }, [isResultPath, files.length])
+
+  // /compress: restore files from session or send home (direct /compress with no PDFs)
+  useEffect(() => {
+    if (!isCompressPath) return
+    if (files.length > 0) return
+    const sf = getSessionFiles()
+    if (sf.length) {
+      setFiles(sf)
+      return
+    }
+    router.replace(`${lp}/`)
+  }, [isCompressPath, files.length, router, lp])
 
   const handleFileSelect = useCallback((e) => {
-    const selected = Array.from(e.target.files || []).filter((f) => f.type === 'application/pdf')
-    if (selected.length) {
-      setFiles((prev) => {
-        const room = MAX_PDF_FILES - prev.length
-        if (room <= 0) {
-          setError(t('maxFilesReached'))
-          return prev
-        }
-        const toAdd = selected.slice(0, room)
-        if (selected.length > toAdd.length) setError(t('maxFilesPartial'))
-        else setError(null)
-        return [...prev, ...toAdd]
-      })
-      router.replace(`${lp}/compress`)
+    const selected = Array.from(e.target.files || []).filter(isPdfFile)
+    if (!selected.length) {
+      e.target.value = ''
+      return
     }
+    const prev = filesRef.current
+    const room = MAX_PDF_FILES - prev.length
+    if (room <= 0) {
+      setError(t('maxFilesReached'))
+      e.target.value = ''
+      return
+    }
+    const toAdd = selected.slice(0, room)
+    if (selected.length > toAdd.length) setError(t('maxFilesPartial'))
+    else setError(null)
+    const merged = [...prev, ...toAdd]
+    setSessionFiles(merged)
+    filesRef.current = merged
+    setFiles(merged)
+    startTransition(() => {
+      router.replace(`${lp}/compress`)
+    })
     e.target.value = ''
-  }, [router, lang, t])
+  }, [router, lp, t])
 
   const handleDrop = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
     dragDepthRef.current = 0
     setIsDragging(false)
-    const dropped = Array.from(e.dataTransfer.files || []).filter((f) => f.type === 'application/pdf')
-    if (dropped.length) {
-      setFiles((prev) => {
-        const room = MAX_PDF_FILES - prev.length
-        if (room <= 0) {
-          setError(t('maxFilesReached'))
-          return prev
-        }
-        const toAdd = dropped.slice(0, room)
-        if (dropped.length > toAdd.length) setError(t('maxFilesPartial'))
-        else setError(null)
-        return [...prev, ...toAdd]
-      })
-      router.replace(`${lp}/compress`)
+    const dropped = Array.from(e.dataTransfer.files || []).filter(isPdfFile)
+    if (!dropped.length) return
+    const prev = filesRef.current
+    const room = MAX_PDF_FILES - prev.length
+    if (room <= 0) {
+      setError(t('maxFilesReached'))
+      return
     }
-  }, [router, lang, t])
+    const toAdd = dropped.slice(0, room)
+    if (dropped.length > toAdd.length) setError(t('maxFilesPartial'))
+    else setError(null)
+    const merged = [...prev, ...toAdd]
+    setSessionFiles(merged)
+    filesRef.current = merged
+    setFiles(merged)
+    startTransition(() => {
+      router.replace(`${lp}/compress`)
+    })
+  }, [router, lp, t])
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault()
@@ -269,15 +358,21 @@ export default function HomePageClient() {
 
   const removeFile = (index) => {
     const next = files.filter((_, i) => i !== index)
+    filesRef.current = next
     setFiles(next)
     if (!next.length) {
+      clearCompressionSession()
       router.replace(`${lp}/`)
+    } else {
+      setSessionFiles(next)
     }
   }
 
-  const triggerFileInput = () => fileInputRef.current?.click()
-
-  const addMoreFiles = () => fileInputRef.current?.click()
+  const triggerFileInput = useCallback(() => {
+    if (isCompressPath) router.prefetch(`${lp}/compress/result`)
+    else router.prefetch(`${lp}/compress`)
+    fileInputRef.current?.click()
+  }, [router, lp, isCompressPath])
 
   // Load PDF via object URL so the worker fetches it — avoids transferring ArrayBuffer (detached buffer error)
   const loadPdfFromUrl = async (pdfjsLib, url) => {
@@ -338,18 +433,21 @@ export default function HomePageClient() {
   }
 
   const runCompress = async () => {
-    if (!files.length || !parsedSettings.valid) return
+    /** Same file list as UI (ref is authoritative; matches compressedPDF-react SPA state). */
+    const fileList = filesRef.current.length ? filesRef.current : files
+    if (!fileList.length || !parsedSettings.valid) return
     setError(null)
     setCompressionResults(null)
+    setSessionResults(null)
     setIsCompressing(true)
     setProgressVisible(false)
     setProgress({ message: t('progressInitializing'), percent: 0 })
-    setCompressFileRows(files.map((f) => ({ name: f.name, status: 'waiting' })))
+    setCompressFileRows(fileList.map((f) => ({ name: f.name, status: 'waiting' })))
 
     const dpi = parsedSettings.dpi
     const quality = parsedSettings.qualityFrac
     const colorIsGray = settings.color === 'gray'
-    const nFiles = files.length
+    const nFiles = fileList.length
 
     const showBarTimer = typeof window !== 'undefined'
       ? window.setTimeout(() => setProgressVisible(true), 220)
@@ -367,7 +465,7 @@ export default function HomePageClient() {
       const results = []
 
       for (let fi = 0; fi < nFiles; fi++) {
-        const file = files[fi]
+        const file = fileList[fi]
         const originalSize = file.size
 
         setCompressFileRows((rows) => rows.map((row, i) => ({
@@ -443,8 +541,11 @@ export default function HomePageClient() {
       }
 
       setProgress({ message: t('progressFinalizing'), percent: 100 })
-      setCompressionResults(results)
-      router.replace(`${lp}/compress/result`)
+      setSessionFiles(fileList)
+      setSessionResults(results)
+      startTransition(() => {
+        router.replace(`${lp}/compress/result`)
+      })
     } catch (err) {
       const msg = err?.message != null ? String(err.message) : ''
       const cause = err?.underlyingError?.message ?? err?.cause?.message
@@ -493,10 +594,13 @@ export default function HomePageClient() {
 
   const handleErase = () => {
     setCompressionResults(null)
+    setSessionResults(null)
     router.replace(`${lp}/compress`)
   }
 
   const handleRestart = () => {
+    clearCompressionSession()
+    filesRef.current = []
     setCompressionResults(null)
     setFiles([])
     setError(null)
@@ -522,7 +626,7 @@ export default function HomePageClient() {
           ref={fileInputRef}
           id="pdf-file-input"
           type="file"
-          accept="application/pdf"
+          accept=".pdf,application/pdf,application/x-pdf"
           multiple
           onChange={handleFileSelect}
           className="sr-only"
@@ -609,7 +713,7 @@ export default function HomePageClient() {
                 <button
                   type="button"
                   className={`link-add-more ${files.length >= MAX_PDF_FILES ? 'link-add-more--disabled' : ''}`}
-                  onClick={addMoreFiles}
+                  onClick={triggerFileInput}
                   disabled={files.length >= MAX_PDF_FILES}
                 >
                   {t('addMoreFiles')}

@@ -75,7 +75,6 @@ export default function Footer({
           <div className="footer-columns">
             <div className="footer-col">
               <h3 className="footer-col-title">{t('footerCompany')}</h3>
-              <a href={`${prefix}/compress`}>{t('footerCompressPdf')}</a>
               <a href={`${prefix}/blog`}>{t('footerBlog')}</a>
               <a href={`${prefix}/contact`}>{t('footerContact')}</a>
               {showFaqLink && (
