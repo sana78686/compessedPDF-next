@@ -1,6 +1,7 @@
 import { getTranslation } from '@/i18n/translations'
 import { absolutizeCmsHtmlServer } from '@/lib/cms/html'
 import { LandingMediaIcon, CARD_ICON_EMOJI } from '@/components/compress/landingFoldRender'
+import LandingFaqDetailsAccordion from '@/components/compress/LandingFaqDetailsAccordion'
 import '@/components/compress/HomePage.css'
 import '@/styles/cms-page.css'
 
@@ -136,27 +137,12 @@ export default function HomeLandingServerBlocks({
           <h2 id="landing-faq-heading" className="landing-section-title">
             {t(lang, 'landing.faqTitle')}
           </h2>
-          <div className="landing-faq-list" role="list">
-            {faqItems.map((item, i) => {
-              const answerHtml = absolutizeCmsHtmlServer(String(item.answer || ''), siteOrigin)
-              return (
-                <details key={i} className="landing-faq-item landing-faq-item--details" role="listitem">
-                  <summary className="landing-faq-question">
-                    <span>{item.question}</span>
-                    <span className="landing-faq-chevron" aria-hidden="true">
-                      +
-                    </span>
-                  </summary>
-                  <div className="landing-faq-answer landing-faq-answer--details">
-                    <div
-                      className="landing-faq-answer__inner cms-page-content"
-                      dangerouslySetInnerHTML={{ __html: answerHtml }}
-                    />
-                  </div>
-                </details>
-              )
-            })}
-          </div>
+          <LandingFaqDetailsAccordion
+            items={faqItems.map((item) => ({
+              question: String(item.question || ''),
+              answerHtml: absolutizeCmsHtmlServer(String(item.answer || ''), siteOrigin),
+            }))}
+          />
         </section>
       )}
     </>

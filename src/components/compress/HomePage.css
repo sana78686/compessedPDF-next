@@ -777,7 +777,8 @@
 
 .landing-faq-answer--details {
   display: block;
-  padding: 0 0 0.75rem 0;
+  /* Match horizontal padding with .landing-faq-question so answer aligns with question text */
+  padding: 0 1.15rem 1rem;
 }
 
 .landing-faq-answer p {
@@ -798,6 +799,15 @@
   line-height: 1.5;
   padding-top: 0.25rem;
   text-align: left;
+}
+
+/* Unify answer color: Quill inline colors (.ql-color-*, style="color:…") otherwise look inconsistent */
+.landing-faq-answer__inner.cms-page-content *:not(a) {
+  color: inherit !important;
+}
+
+.landing-faq-answer__inner.cms-page-content a {
+  color: var(--accent-red, #e03d3d) !important;
 }
 
 .landing-faq-answer__inner.cms-page-content :first-child {
@@ -826,7 +836,6 @@
 }
 
 .landing-faq-answer__inner.cms-page-content a {
-  color: var(--accent-red, #e03d3d);
   text-decoration: none;
 }
 
@@ -862,7 +871,8 @@
   width: 100%;
   max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 0 var(--content-padding-x) 2rem;
+  /* Horizontal padding comes from .main — avoid double gutter on mobile */
+  padding: 0 0 2rem;
   box-sizing: border-box;
 }
 
@@ -1750,7 +1760,17 @@
     left: auto;
   }
 
-  .main {
+  /* One horizontal gutter: outer <main.cms-main> only; inner .main--landing is full width inside it */
+  .main.cms-main {
+    padding: 1.5rem 0 2.5rem;
+    padding-inline: max(0.65rem, env(safe-area-inset-left, 0px)) max(0.65rem, env(safe-area-inset-right, 0px));
+  }
+
+  .main.cms-main > .main.main--landing {
+    padding-inline: 0;
+  }
+
+  .main:not(.main--landing):not(.cms-main) {
     padding: 1.5rem 1rem 2.5rem;
   }
 
@@ -1783,6 +1803,13 @@
   .landing-faq-question {
     padding: 0.85rem 1rem;
     font-size: 0.95rem;
+  }
+
+  .landing-faq-answer,
+  .landing-faq-answer--details {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
   }
 
   .main-subtitle {
@@ -1850,7 +1877,16 @@
     padding: 0.5rem 0.75rem;
   }
 
-  .main {
+  .main.cms-main {
+    padding: 1.25rem 0 2rem;
+    padding-inline: max(0.5rem, env(safe-area-inset-left, 0px)) max(0.5rem, env(safe-area-inset-right, 0px));
+  }
+
+  .main.cms-main > .main.main--landing {
+    padding-inline: 0;
+  }
+
+  .main:not(.main--landing):not(.cms-main) {
     padding: 1.25rem 0.75rem 2rem;
   }
 
