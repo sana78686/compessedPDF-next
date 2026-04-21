@@ -65,6 +65,7 @@ export default async function EnHomePage() {
   return (
     <>
       <JsonLdScript data={jsonLd} />
+      <h1 className="sr-only">{h.seoHeroH1}</h1>
       <HomePageClient landingExtrasOnServer homeCmsFromServer={{ html, jsonLd }} />
       {cmsHtmlHasVisibleText(html) ? (
         <section className="landing-cms-body-section" aria-label={homeCmsAria}>

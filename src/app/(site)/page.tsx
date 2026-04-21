@@ -65,6 +65,8 @@ export default async function HomePage() {
   return (
     <>
       <JsonLdScript data={jsonLd} />
+      {/* One real <h1> in server HTML for crawlers; visible title stays in client hero as <p> */}
+      <h1 className="sr-only">{h.seoHeroH1}</h1>
       <HomePageClient landingExtrasOnServer homeCmsFromServer={{ html, jsonLd }} />
       {cmsHtmlHasVisibleText(html) ? (
         <section className="landing-cms-body-section" aria-label={homeCmsAria}>

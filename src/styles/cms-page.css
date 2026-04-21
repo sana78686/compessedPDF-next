@@ -83,10 +83,44 @@
   margin: 0 0 1rem;
 }
 
+/* Lists: Tailwind Preflight sets list-style:none on ul/ol — restore bullets for CMS / Quill HTML */
 .cms-page-content ul,
-.cms-page-content ol {
+.cms-home-cms-body ul,
+.legal-content-body ul {
+  list-style-type: disc;
+  list-style-position: outside;
   margin: 0 0 1rem;
-  padding-left: 1.5rem;
+  padding-left: 1.75rem;
+}
+
+.cms-page-content ol,
+.cms-home-cms-body ol,
+.legal-content-body ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+  margin: 0 0 1rem;
+  padding-left: 1.75rem;
+}
+
+.cms-page-content ul ul,
+.cms-home-cms-body ul ul,
+.legal-content-body ul ul {
+  list-style-type: circle;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.cms-page-content li,
+.cms-home-cms-body li,
+.legal-content-body li {
+  display: list-item;
+  margin-bottom: 0.35rem;
+}
+
+.cms-page-content ol ol,
+.cms-home-cms-body ol ol,
+.legal-content-body ol ol {
+  list-style-type: lower-alpha;
 }
 
 .cms-page-content a {
@@ -311,13 +345,22 @@
   color: var(--text-secondary);
 }
 
-.cms-blog-content ul,
-.cms-blog-content ol {
+.cms-blog-content ul {
+  list-style-type: disc;
+  list-style-position: outside;
   margin: 0 0 1rem;
-  padding-left: 1.5rem;
+  padding-left: 1.75rem;
+}
+
+.cms-blog-content ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+  margin: 0 0 1rem;
+  padding-left: 1.75rem;
 }
 
 .cms-blog-content li {
+  display: list-item;
   margin-bottom: 0.35rem;
 }
 
