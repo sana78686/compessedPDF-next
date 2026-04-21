@@ -128,3 +128,16 @@ export async function getFaq(locale: string) {
   const host = await getSiteDomainForRequest()
   return fetchPublicJsonUncached('/faq', locale, host) as Promise<{ faq?: { question?: string; answer?: string }[] }>
 }
+
+export async function getHomeCards(locale: string) {
+  const host = await getSiteDomainForRequest()
+  return fetchPublicJsonUncached('/home-cards', locale, host) as Promise<{
+    cards?: unknown[]
+    section?: { title?: string; description?: string }
+  }>
+}
+
+export async function getSections(locale: string) {
+  const host = await getSiteDomainForRequest()
+  return fetchPublicJsonUncached('/sections', locale, host) as Promise<{ sections?: unknown[] }>
+}

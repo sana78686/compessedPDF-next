@@ -757,6 +757,29 @@
   display: none;
 }
 
+/* Server-rendered FAQ (<details>) — same visual weight as accordion; text always in HTML */
+.landing-faq-item--details {
+  border-radius: inherit;
+}
+
+.landing-faq-item--details .landing-faq-question {
+  list-style: none;
+  cursor: pointer;
+}
+
+.landing-faq-item--details .landing-faq-question::-webkit-details-marker {
+  display: none;
+}
+
+.landing-faq-item--details[open] .landing-faq-chevron {
+  transform: rotate(45deg);
+}
+
+.landing-faq-answer--details {
+  display: block;
+  padding: 0 0 0.75rem 0;
+}
+
 .landing-faq-answer p {
   margin: 0;
   font-size: 0.95rem;

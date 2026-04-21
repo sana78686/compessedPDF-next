@@ -19,6 +19,7 @@ import '@/styles/cms-page.css'
 /** Served from /public/pdf.worker.min.mjs (copy from pdfjs-dist on install). */
 const pdfWorkerUrl = '/pdf.worker.min.mjs'
 import { COMPRESS_PDF_EN } from '@/constants/brand'
+import { cmsHtmlHasVisibleText } from '@/utils/cmsHtmlVisible'
 
 const LandingBelowFold = lazy(() => import('./LandingBelowFold'))
 const LandingFaqSection = lazy(() => import('./LandingFaqSection'))
@@ -63,12 +64,6 @@ function isPdfFile(f) {
   return /\.pdf$/i.test(String(f?.name || ''))
 }
 
-function cmsHtmlHasVisibleText(html) {
-  if (!html || typeof html !== 'string') return false
-  const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-  return text.length > 0
-}
-
 /** DPI and image quality must both be set to valid positive numbers before compress is enabled. */
 function parseCompressionSettings(settings) {
   const d = parseFloat(String(settings.dpi ?? '').trim())
@@ -83,8 +78,11 @@ function parseCompressionSettings(settings) {
   }
 }
 
-/** @param {{ homeCmsFromServer?: { html: string, jsonLd?: object | null } }} props */
-export default function HomePageClient({ homeCmsFromServer } = {}) {
+/**
+ * @param {{ homeCmsFromServer?: { html: string, jsonLd?: object | null }, landingExtrasOnServer?: boolean }} props
+ * `landingExtrasOnServer`: home route only — CMS body / below-fold / FAQ rendered in `page.tsx` (View Source).
+ */
+export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServer = false } = {}) {
   const lang = usePathLang()
   const pathname = usePathname() || '/'
   const router = useRouter()
@@ -95,6 +93,7 @@ export default function HomePageClient({ homeCmsFromServer } = {}) {
   const isCompressPage = isCompressPath || isResultPath
   const step = isResultPath ? STEP_RESULT : isCompressPath ? STEP_SETTINGS : STEP_UPLOAD
   const isHomeLanding = pathname === `${lp}/` || pathname === lp
+  const skipClientLandingExtras = Boolean(landingExtrasOnServer && isHomeLanding)
 
   const COLOR_OPTIONS = [
     { value: 'no-change', label: t('colorNoChange') },
@@ -145,16 +144,6 @@ export default function HomePageClient({ homeCmsFromServer } = {}) {
   useEffect(() => {
     filesRef.current = files
   }, [files])
-
-  /* Prefetch route JS so /compress and /result feel instant after upload / compress. */
-  useEffect(() => {
-    if (isHomeLanding) {
-      router.prefetch(`${lp}/compress`)
-      router.prefetch(`${lp}/compress/result`)
-    } else if (isCompressPath) {
-      router.prefetch(`${lp}/compress/result`)
-    }
-  }, [isHomeLanding, isCompressPath, router, lp])
 
   /* Warm pdf.js + jspdf + worker while user adjusts DPI (first Compress click avoids cold import). */
   useEffect(() => {
@@ -222,6 +211,7 @@ export default function HomePageClient({ homeCmsFromServer } = {}) {
 
   /* Fetch FAQ and cards when below-the-fold is shown */
   useEffect(() => {
+    if (skipClientLandingExtras) return undefined
     if (!showBelowFold) return
     let cancelled = false
     Promise.all([
@@ -244,18 +234,18 @@ export default function HomePageClient({ homeCmsFromServer } = {}) {
         setCmsSections([])
       })
     return () => { cancelled = true }
-  }, [showBelowFold, lang])
+  }, [showBelowFold, lang, skipClientLandingExtras])
 
   /* Defer below-the-fold content to reduce TBT on mobile (Lighthouse Performance) */
   useEffect(() => {
-    if (!isCompressPage) {
-      const schedule = () => startTransition(() => setShowBelowFold(true))
-      const id = typeof requestIdleCallback !== 'undefined'
+    if (skipClientLandingExtras || isCompressPage) return undefined
+    const schedule = () => startTransition(() => setShowBelowFold(true))
+    const id =
+      typeof requestIdleCallback !== 'undefined'
         ? requestIdleCallback(schedule, { timeout: 1500 })
         : setTimeout(schedule, 100)
-      return () => (typeof cancelIdleCallback !== 'undefined' ? cancelIdleCallback(id) : clearTimeout(id))
-    }
-  }, [isCompressPage])
+    return () => (typeof cancelIdleCallback !== 'undefined' ? cancelIdleCallback(id) : clearTimeout(id))
+  }, [isCompressPage, skipClientLandingExtras])
 
   /* Do NOT sync files/results from React state into compress-session on every render:
    * a new route mount starts with files=[] and would clear the session before hydrate runs. */
@@ -379,10 +369,8 @@ export default function HomePageClient({ homeCmsFromServer } = {}) {
   }
 
   const triggerFileInput = useCallback(() => {
-    if (isCompressPath) router.prefetch(`${lp}/compress/result`)
-    else router.prefetch(`${lp}/compress`)
     fileInputRef.current?.click()
-  }, [router, lp, isCompressPath])
+  }, [])
 
   // Load PDF via object URL so the worker fetches it — avoids transferring ArrayBuffer (detached buffer error)
   const loadPdfFromUrl = async (pdfjsLib, url) => {
@@ -685,7 +673,8 @@ export default function HomePageClient({ homeCmsFromServer } = {}) {
               </div>
             </section>
 
-            {cmsHtmlHasVisibleText(cmsHomeHtml) && (
+            {homeCmsFromServer === undefined &&
+              cmsHtmlHasVisibleText(cmsHomeHtml) && (
               <section
                 className="landing-cms-body-section"
                 aria-label={t('landing.cmsSectionAria')}
@@ -697,7 +686,7 @@ export default function HomePageClient({ homeCmsFromServer } = {}) {
               </section>
             )}
 
-            {showBelowFold && (
+            {!skipClientLandingExtras && showBelowFold && (
               <Suspense fallback={null}>
                 <LandingBelowFold t={t} cards={landingCards} howSection={howSection} sections={cmsSections} />
               </Suspense>
@@ -955,7 +944,7 @@ export default function HomePageClient({ homeCmsFromServer } = {}) {
           </div>
         )}
 
-        {showBelowFold && !isCompressPage && faqItems.length > 0 && (
+        {!skipClientLandingExtras && showBelowFold && !isCompressPage && faqItems.length > 0 && (
           <Suspense fallback={null}>
             <LandingFaqSection
               t={t}
