@@ -1,8 +1,11 @@
 import type { MetadataRoute } from 'next'
 import { siteOriginFromEnv } from '@/lib/cms/html'
-import { getBlogs } from '@/lib/cms/server'
+import { getBlogs, getPages } from '@/lib/cms/server'
 
 export const revalidate = 3600
+
+/** Keep in sync with `src/app/(site)/legal/[slug]/page.tsx` */
+const LEGAL_SLUGS = ['terms', 'privacy-policy', 'disclaimer', 'about-us', 'cookie-policy']
 
 function normalizeBlogSlugs(res: unknown): { slug: string }[] {
   if (Array.isArray(res)) {
@@ -18,6 +21,15 @@ function normalizeBlogSlugs(res: unknown): { slug: string }[] {
       .map((b) => ({ slug: b.slug as string }))
   }
   return []
+}
+
+function normalizePageSlugs(res: unknown): string[] {
+  if (!res || typeof res !== 'object') return []
+  const pages = (res as { pages?: { slug?: string }[] }).pages
+  if (!Array.isArray(pages)) return []
+  return pages
+    .map((p) => (p && typeof p.slug === 'string' ? p.slug : ''))
+    .filter(Boolean)
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -42,8 +54,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority,
   }))
 
+  for (const slug of LEGAL_SLUGS) {
+    entries.push({
+      url: `${base}/legal/${encodeURIComponent(slug)}`,
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    })
+    entries.push({
+      url: `${base}/en/legal/${encodeURIComponent(slug)}`,
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    })
+  }
+
   try {
-    const [idRes, enRes] = await Promise.all([getBlogs('id'), getBlogs('en')])
+    const [idRes, enRes, idPages, enPages] = await Promise.all([
+      getBlogs('id'),
+      getBlogs('en'),
+      getPages('id'),
+      getPages('en'),
+    ])
     for (const b of normalizeBlogSlugs(idRes)) {
       entries.push({
         url: `${base}/blog/${encodeURIComponent(b.slug)}`,
@@ -58,6 +90,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified,
         changeFrequency: 'monthly',
         priority: 0.7,
+      })
+    }
+    for (const slug of normalizePageSlugs(idPages)) {
+      entries.push({
+        url: `${base}/page/${encodeURIComponent(slug)}`,
+        lastModified,
+        changeFrequency: 'monthly',
+        priority: 0.65,
+      })
+    }
+    for (const slug of normalizePageSlugs(enPages)) {
+      entries.push({
+        url: `${base}/en/page/${encodeURIComponent(slug)}`,
+        lastModified,
+        changeFrequency: 'monthly',
+        priority: 0.65,
       })
     }
   } catch {

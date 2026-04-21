@@ -83,7 +83,8 @@ function parseCompressionSettings(settings) {
   }
 }
 
-export default function HomePageClient() {
+/** @param {{ homeCmsFromServer?: { html: string, jsonLd?: object | null } }} props */
+export default function HomePageClient({ homeCmsFromServer } = {}) {
   const lang = usePathLang()
   const pathname = usePathname() || '/'
   const router = useRouter()
@@ -124,10 +125,14 @@ export default function HomePageClient() {
   const [landingCards, setLandingCards] = useState([])
   /** Optional CMS “how it works” block from home-cards when no dynamic sections */
   const [howSection, setHowSection] = useState(null)
-  /** CMS “Home page” rich text (locale-specific), from public /home-content */
-  const [cmsHomeHtml, setCmsHomeHtml] = useState('')
+  /** CMS “Home page” rich text — SSR on `/` and `/en`, else client fetch on landing */
+  const [cmsHomeHtml, setCmsHomeHtml] = useState(() =>
+    homeCmsFromServer ? String(homeCmsFromServer.html ?? '') : '',
+  )
   const [cmsSections, setCmsSections] = useState([])
-  const [homeJsonLd, setHomeJsonLd] = useState(null)
+  const [homeJsonLd, setHomeJsonLd] = useState(() =>
+    homeCmsFromServer && homeCmsFromServer.jsonLd != null ? homeCmsFromServer.jsonLd : null,
+  )
   const [toolJsonLd, setToolJsonLd] = useState(null)
 
   const parsedSettings = useMemo(() => parseCompressionSettings(settings), [settings.dpi, settings.imageQuality])
@@ -168,9 +173,10 @@ export default function HomePageClient() {
 
   const publicPathForSeo = pathname.split('?')[0] || '/'
 
-  /* Home landing: fetch CMS home HTML in parallel with main content. */
+  /* Home landing: fetch CMS home HTML only when not already SSR (e.g. /compress has no homeCmsFromServer). */
   useEffect(() => {
     if (!isHomeLanding) return undefined
+    if (homeCmsFromServer !== undefined) return undefined
     let cancelled = false
     const homePromise = getHomePageContent(lang, publicPathForSeo)
       .then((res) => {
@@ -189,7 +195,7 @@ export default function HomePageClient() {
     return () => {
       cancelled = true
     }
-  }, [isHomeLanding, lang, publicPathForSeo])
+  }, [isHomeLanding, lang, publicPathForSeo, homeCmsFromServer])
 
   useEffect(() => {
     if (!isCompressPage) {
