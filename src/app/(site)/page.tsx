@@ -4,7 +4,8 @@ import HomeLandingServerBlocks from '@/components/compress/HomeLandingServerBloc
 import { JsonLdScript } from '@/components/cms/JsonLdScript'
 import { translations } from '@/i18n/translations'
 import { socialMetadata } from '@/lib/seoMetadata'
-import { getHomePageContent, getFaq, getHomeCards, getSections } from '@/lib/cms/server'
+import { getHomePageContent, getBlogs, getHomeCards, getSections } from '@/lib/cms/server'
+import { normalizeBlogsResponse } from '@/lib/cms/normalizeBlogs'
 import { absolutizeCmsHtmlServer, siteOriginFromEnv } from '@/lib/cms/html'
 import { cmsHtmlHasVisibleText } from '@/utils/cmsHtmlVisible'
 import '@/styles/cms-page.css'
@@ -30,7 +31,7 @@ export default async function HomePage() {
   const origin = siteOriginFromEnv()
 
   let res: { content?: string; json_ld?: { '@graph'?: unknown[] } } = {}
-  let faqRes: { faq?: { question?: string; answer?: string }[] } = { faq: [] }
+  let blogsRes: unknown = null
   let cardsRes: {
     cards?: { id: number; title: string; description?: string; icon?: string }[]
     section?: { title?: string; description?: string }
@@ -40,9 +41,9 @@ export default async function HomePage() {
   } = {}
 
   try {
-    ;[res, faqRes, cardsRes, sectionsRes] = await Promise.all([
+    ;[res, blogsRes, cardsRes, sectionsRes] = await Promise.all([
       getHomePageContent('id', '/') as Promise<typeof res>,
-      getFaq('id') as Promise<typeof faqRes>,
+      getBlogs('id'),
       getHomeCards('id') as Promise<typeof cardsRes>,
       getSections('id') as Promise<typeof sectionsRes>,
     ])
@@ -60,7 +61,7 @@ export default async function HomePage() {
   const sections = Array.isArray(sectionsRes?.sections) ? sectionsRes.sections : []
   const howSection =
     cardsRes?.section && typeof cardsRes.section === 'object' ? cardsRes.section : null
-  const faqRaw = Array.isArray(faqRes?.faq) ? faqRes.faq : []
+  const blogs = normalizeBlogsResponse(blogsRes)
 
   return (
     <>
@@ -82,7 +83,7 @@ export default async function HomePage() {
         cards={cards}
         sections={sections as never}
         howSection={howSection}
-        faqRaw={faqRaw}
+        blogs={blogs}
       />
     </>
   )

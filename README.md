@@ -20,6 +20,19 @@ npm run dev
 
 After deploy, confirm the dynamic sitemap lists your preferred host (same value as `NEXT_PUBLIC_SITE_ORIGIN`), e.g. `curl -s https://compresspdf.id/sitemap.xml | head` should include `<loc>https://compresspdf.id/</loc>` and `<loc>https://compresspdf.id/blog</loc>`. If Ahrefs still reports “pages removed from sitemaps,” run a new crawl after DNS and env match.
 
+### GlobalCMS (`robots.txt`, `sitemap.xml`, push from admin)
+
+This app matches the **compressedPDF-react** contract with [GlobalCMS-app.apimstec.com](https://GlobalCMS-app.apimstec.com):
+
+1. **Canonical URLs on the CMS host** — same as before: `https://{CMS_APP}/{NEXT_PUBLIC_SITE_DOMAIN}/robots.txt` and `.../sitemap.xml` (see Laravel routes `robots.by-domain` / `sitemap.by-domain`).
+2. **Live site responses** — `/robots.txt` and `/sitemap.xml` are served by route handlers that, in order:
+   - use files written under `public/` when the CMS **pushes** to the site, or
+   - **fetch** the CMS canonical URL above (cached ~1h), or
+   - fall back to a safe default (`robots`) or a **programmatic sitemap** (static routes + blogs/pages from the public API, like the old `app/sitemap.ts`).
+3. **Push from CMS (“Write on live domain”)** — set **`CMS_SEO_SYNC_SECRET`** on the Node server to the **same** value as **`FRONTEND_SEO_SYNC_SECRET`** in the CMS `.env`. The CMS still POSTs to **`https://yoursite/cms-seo-sync.php`**; Next.js **rewrites** that to **`/api/cms-seo-sync`** (same fields: `secret`, `action`, `content`). Optional: set **`FRONTEND_SEO_SYNC_PATH=api/cms-seo-sync`** in the CMS if you prefer not to rely on the rewrite.
+
+On **serverless** hosts (e.g. Vercel), files written by the push API may not persist; in that case rely on the **CMS fetch** path (ensure `NEXT_PUBLIC_CMS_API_URL` and `NEXT_PUBLIC_SITE_DOMAIN` are correct) or run the app on a VPS with a writable filesystem.
+
 Open **http://localhost:3001** (not 3000 — see below).
 
 `postinstall` copies `pdf.worker.min.mjs` into `public/` for the client compressor.

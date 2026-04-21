@@ -2,35 +2,14 @@ import Link from 'next/link'
 import { getBlogs } from '@/lib/cms/server'
 import { JsonLdScript } from '@/components/cms/JsonLdScript'
 import { siteOriginFromEnv } from '@/lib/cms/html'
+import { normalizeBlogsResponse, type BlogPostPreview } from '@/lib/cms/normalizeBlogs'
 import { translations, langPrefix } from '@/i18n/translations'
 import BlogCardCover from '@/components/blog/BlogCardCover'
 import '@/styles/BlogListPage.css'
 
 type Locale = 'id' | 'en'
 
-type BlogPost = {
-  id: number
-  title: string
-  slug: string
-  excerpt?: string
-  published_at?: string
-  og_image?: string
-  image?: string
-}
-
-function normalizeBlogs(res: unknown): BlogPost[] {
-  if (Array.isArray(res)) return res as BlogPost[]
-  if (res && typeof res === 'object') {
-    const o = res as Record<string, unknown>
-    const raw = Array.isArray(o.blogs)
-      ? o.blogs
-      : Array.isArray(o.data)
-        ? o.data
-        : []
-    return raw as BlogPost[]
-  }
-  return []
-}
+type BlogPost = BlogPostPreview
 
 function formatDate(iso: string) {
   if (!iso) return ''
@@ -43,7 +22,7 @@ function formatDate(iso: string) {
 
 export async function BlogListView({ locale }: { locale: Locale }) {
   const res = await getBlogs(locale)
-  const blogs = normalizeBlogs(res)
+  const blogs = normalizeBlogsResponse(res)
   const jsonLd =
     res && typeof res === 'object' && 'json_ld' in res ? (res as { json_ld?: unknown }).json_ld : null
   const b = translations[locale].blog

@@ -35,7 +35,6 @@ type FooterProps = {
   t: (key: string, params?: Record<string, string | number>) => string
   footerPages?: FooterPage[]
   legalVisibility?: Record<string, boolean>
-  showFaqLink?: boolean
 }
 
 export default function Footer({
@@ -44,7 +43,6 @@ export default function Footer({
   t,
   footerPages = [],
   legalVisibility = {},
-  showFaqLink = false,
 }: FooterProps) {
   const [langOpen, setLangOpen] = useState(false)
   const langRef = useRef<HTMLDivElement | null>(null)
@@ -78,9 +76,6 @@ export default function Footer({
               <h3 className="footer-col-title">{t('footerCompany')}</h3>
               <a href={`${prefix}/blog`}>{t('footerBlog')}</a>
               <a href={`${prefix}/contact`}>{t('footerContact')}</a>
-              {showFaqLink && (
-                <a href={`${prefix}/#landing-faq`}>{t('footerFaq')}</a>
-              )}
             </div>
             {cmsFooterLinks.length > 0 && (
               <div className="footer-col">

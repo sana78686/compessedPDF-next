@@ -1,9 +1,11 @@
-import { getTranslation } from '@/i18n/translations'
-import { absolutizeCmsHtmlServer } from '@/lib/cms/html'
+import Link from 'next/link'
+import { getTranslation, langPrefix } from '@/i18n/translations'
+import type { BlogPostPreview } from '@/lib/cms/normalizeBlogs'
 import { LandingMediaIcon, CARD_ICON_EMOJI } from '@/components/compress/landingFoldRender'
-import LandingFaqDetailsAccordion from '@/components/compress/LandingFaqDetailsAccordion'
+import BlogCardCover from '@/components/blog/BlogCardCover'
 import '@/components/compress/HomePage.css'
 import '@/styles/cms-page.css'
+import '@/styles/BlogListPage.css'
 
 type Lang = 'id' | 'en'
 
@@ -15,19 +17,22 @@ type Section = { id: number; title?: string; description?: string; items?: Secti
 
 type HowSection = { title?: string; description?: string } | null
 
+const LANDING_BLOG_PREVIEW_MAX = 4
+
 function t(lang: Lang, key: string): string {
   const v = getTranslation(lang, key)
   return typeof v === 'string' ? v : key
 }
 
-function stripHtml(s: string) {
-  return s.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-}
-
-function faqItemHasContent(q: unknown, a: unknown) {
-  const qs = stripHtml(String(q ?? ''))
-  const as = stripHtml(String(a ?? ''))
-  return qs.length > 0 || as.length > 0
+function formatBlogDate(iso: string, lang: Lang) {
+  if (!iso) return ''
+  try {
+    return new Date(iso).toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US', {
+      dateStyle: 'medium',
+    })
+  } catch {
+    return iso
+  }
 }
 
 type Props = {
@@ -36,7 +41,7 @@ type Props = {
   cards: Card[]
   sections: Section[]
   howSection: HowSection
-  faqRaw: { question?: string; answer?: string }[]
+  blogs: BlogPostPreview[]
 }
 
 /** Home landing blocks rendered on the server so CMS copy is in View Source (not only after JS). */
@@ -46,13 +51,13 @@ export default function HomeLandingServerBlocks({
   cards,
   sections,
   howSection,
-  faqRaw,
+  blogs,
 }: Props) {
   const cardEmoji = (iconKey: string) => CARD_ICON_EMOJI[iconKey] ?? '✨'
-
-  const faqItems = (Array.isArray(faqRaw) ? faqRaw : []).filter((item) =>
-    faqItemHasContent(item?.question, item?.answer),
-  )
+  const lp = langPrefix(lang)
+  const blogListHref = `${lp}/blog`
+  const previewPosts = blogs.slice(0, LANDING_BLOG_PREVIEW_MAX)
+  const readMore = t(lang, 'blog.readMore')
 
   return (
     <>
@@ -132,17 +137,45 @@ export default function HomeLandingServerBlocks({
         </section>
       )}
 
-      {faqItems.length > 0 && (
-        <section id="landing-faq" className="landing-section landing-faq" aria-labelledby="landing-faq-heading">
-          <h2 id="landing-faq-heading" className="landing-section-title">
-            {t(lang, 'landing.faqTitle')}
-          </h2>
-          <LandingFaqDetailsAccordion
-            items={faqItems.map((item) => ({
-              question: String(item.question || ''),
-              answerHtml: absolutizeCmsHtmlServer(String(item.answer || ''), siteOrigin),
-            }))}
-          />
+      {previewPosts.length > 0 && (
+        <section id="landing-blog" className="landing-section landing-blog" aria-labelledby="landing-blog-heading">
+          <div className="landing-blog-header">
+            <h2 id="landing-blog-heading" className="landing-section-title landing-blog-title">
+              {t(lang, 'fromTheBlog')}
+            </h2>
+            <Link href={blogListHref} className="landing-blog-view-all">
+              {t(lang, 'viewAllPosts')}
+            </Link>
+          </div>
+          <div className="landing-blog-grid">
+            {previewPosts.map((post) => (
+              <Link
+                key={post.id}
+                href={`${lp}/blog/${encodeURIComponent(post.slug)}`}
+                className="blog-card landing-blog-card"
+              >
+                <div className="blog-card-image-wrap">
+                  <BlogCardCover
+                    src={post.og_image || post.image}
+                    title={post.title}
+                    siteOrigin={siteOrigin}
+                  />
+                </div>
+                <div className="blog-card-body">
+                  {post.published_at && (
+                    <time className="blog-card-date" dateTime={post.published_at}>
+                      {formatBlogDate(post.published_at, lang)}
+                    </time>
+                  )}
+                  <h3 className="blog-card-title">{post.title}</h3>
+                  {post.excerpt ? <p className="blog-card-excerpt">{post.excerpt}</p> : null}
+                  <span className="blog-card-link">
+                    {readMore} →
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
     </>

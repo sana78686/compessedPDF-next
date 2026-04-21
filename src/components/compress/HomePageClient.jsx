@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useTranslation } from '@/i18n/useTranslation'
 import { langPrefix } from '@/i18n/translations'
 import { usePathLang } from '@/hooks/usePathLang'
-import { getFaq, getHomeCards, getSections, getHomePageContent, getToolSchemaJsonLd } from '@/lib/cms-client'
+import { getHomeCards, getSections, getHomePageContent, getToolSchemaJsonLd } from '@/lib/cms-client'
 import {
   setSessionFiles,
   setSessionResults,
@@ -22,7 +22,6 @@ import { COMPRESS_PDF_EN } from '@/constants/brand'
 import { cmsHtmlHasVisibleText } from '@/utils/cmsHtmlVisible'
 
 const LandingBelowFold = lazy(() => import('./LandingBelowFold'))
-const LandingFaqSection = lazy(() => import('./LandingFaqSection'))
 
 // Workaround for servers that serve .mjs as application/octet-stream: fetch worker as text
 // and create a blob URL so the worker runs with correct MIME (works on live without Nginx fix).
@@ -80,7 +79,7 @@ function parseCompressionSettings(settings) {
 
 /**
  * @param {{ homeCmsFromServer?: { html: string, jsonLd?: object | null }, landingExtrasOnServer?: boolean }} props
- * `landingExtrasOnServer`: home route only — CMS body / below-fold / FAQ rendered in `page.tsx` (View Source).
+ * `landingExtrasOnServer`: home route only — CMS body / below-fold / blog preview rendered in `page.tsx` (View Source).
  */
 export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServer = false } = {}) {
   const lang = usePathLang()
@@ -118,9 +117,7 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
   /** Latest file list for handlers — must not rely on setState updater running before router navigation. */
   const filesRef = useRef([])
   const dragDepthRef = useRef(0)
-  const [faqOpenIndex, setFaqOpenIndex] = useState(null)
   const [showBelowFold, setShowBelowFold] = useState(false)
-  const [landingFaq, setLandingFaq] = useState([])
   const [landingCards, setLandingCards] = useState([])
   /** Optional CMS “how it works” block from home-cards when no dynamic sections */
   const [howSection, setHowSection] = useState(null)
@@ -209,26 +206,23 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
     }
   }, [isCompressPage, lang, publicPathForSeo])
 
-  /* Fetch FAQ and cards when below-the-fold is shown */
+  /* Fetch cards / sections when below-the-fold is shown */
   useEffect(() => {
     if (skipClientLandingExtras) return undefined
     if (!showBelowFold) return
     let cancelled = false
     Promise.all([
-      getFaq(lang).catch(() => ({ faq: [] })),
       getHomeCards(lang).catch(() => ({ cards: [] })),
       getSections(lang).catch(() => ({ sections: [] })),
     ])
-      .then(([faqRes, cardsRes, sectionsRes]) => {
+      .then(([cardsRes, sectionsRes]) => {
         if (cancelled) return
-        setLandingFaq(Array.isArray(faqRes.faq) ? faqRes.faq : [])
         setLandingCards(Array.isArray(cardsRes.cards) ? cardsRes.cards : [])
         setHowSection(cardsRes?.section && typeof cardsRes.section === 'object' ? cardsRes.section : null)
         setCmsSections(Array.isArray(sectionsRes.sections) ? sectionsRes.sections : [])
       })
       .catch(() => {
         if (cancelled) return
-        setLandingFaq([])
         setLandingCards([])
         setHowSection(null)
         setCmsSections([])
@@ -605,11 +599,6 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
     router.replace(`${lp}/`)
   }
 
-  /* CMS FAQ: show section only when at least one item exists */
-  const faqItems = landingFaq.length > 0
-    ? landingFaq.map((item) => ({ q: item.question, a: item.answer }))
-    : []
-
   return (
     <>
       <JsonLd data={isCompressPage ? toolJsonLd : isHomeLanding ? homeJsonLd : null} />
@@ -944,16 +933,6 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
           </div>
         )}
 
-        {!skipClientLandingExtras && showBelowFold && !isCompressPage && faqItems.length > 0 && (
-          <Suspense fallback={null}>
-            <LandingFaqSection
-              t={t}
-              faqItems={faqItems}
-              faqOpenIndex={faqOpenIndex}
-              setFaqOpenIndex={setFaqOpenIndex}
-            />
-          </Suspense>
-        )}
       </div>
     </>
   )

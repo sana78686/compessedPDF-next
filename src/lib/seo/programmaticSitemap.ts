@@ -2,8 +2,6 @@ import type { MetadataRoute } from 'next'
 import { siteOriginFromEnv } from '@/lib/cms/html'
 import { getBlogs, getPages } from '@/lib/cms/server'
 
-export const revalidate = 3600
-
 /** Keep in sync with `src/app/(site)/legal/[slug]/page.tsx` */
 const LEGAL_SLUGS = ['terms', 'privacy-policy', 'disclaimer', 'about-us', 'cookie-policy']
 
@@ -32,7 +30,16 @@ function normalizePageSlugs(res: unknown): string[] {
     .filter(Boolean)
 }
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+function escapeXml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/** Same URL set as the former `app/sitemap.ts` (blogs, pages, legal, static routes). */
+export async function getProgrammaticSitemapEntries(): Promise<MetadataRoute.Sitemap> {
   const base = siteOriginFromEnv().replace(/\/+$/, '')
   const lastModified = new Date()
 
@@ -109,8 +116,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })
     }
   } catch {
-    /* CMS unavailable during build — static URLs still listed */
+    /* CMS unavailable — static URLs still listed */
   }
 
   return entries
+}
+
+export function sitemapEntriesToXml(entries: MetadataRoute.Sitemap): string {
+  const lines = entries.map((e) => {
+    const loc = escapeXml(e.url)
+    const lastmod =
+      e.lastModified != null
+        ? `<lastmod>${escapeXml(new Date(e.lastModified).toISOString())}</lastmod>`
+        : ''
+    const cf =
+      e.changeFrequency != null
+        ? `<changefreq>${escapeXml(String(e.changeFrequency))}</changefreq>`
+        : ''
+    const pr = e.priority != null ? `<priority>${escapeXml(String(e.priority))}</priority>` : ''
+    return `  <url><loc>${loc}</loc>${lastmod}${cf}${pr}</url>`
+  })
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${lines.join('\n')}\n</urlset>\n`
 }
