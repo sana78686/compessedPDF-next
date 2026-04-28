@@ -18,7 +18,6 @@ import './HomePage.css'
 import '@/styles/cms-page.css'
 /** Served from /public/pdf.worker.min.mjs (copy from pdfjs-dist on install). */
 const pdfWorkerUrl = '/pdf.worker.min.mjs'
-import { COMPRESS_PDF_EN } from '@/constants/brand'
 import { cmsHtmlHasVisibleText } from '@/utils/cmsHtmlVisible'
 
 const LandingBelowFold = lazy(() => import('./LandingBelowFold'))
@@ -622,11 +621,11 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
 
         {!isCompressPage && (
           <>
-            {/* SEO: Upload section first – main CTA above the fold */}
+            {/* SEO: Upload section first – main CTA above the fold. Real visible H1 so Google crawls it. */}
             <section id="compress-tool" className="landing-upload-section landing-upload-section--first" aria-labelledby="landing-upload-h1">
-              <p id="landing-upload-h1" className="landing-upload-h1">
-                {COMPRESS_PDF_EN}
-              </p>
+              <h1 id="landing-upload-h1" className="landing-upload-h1">
+                {t('seoHeroH1')}
+              </h1>
               <p id="landing-select-heading" className="landing-upload-heading">{t('landing.readySubtitle')}</p>
               <div
                 className={`upload-zone ${isDragging ? 'upload-zone--dragging' : ''}`}

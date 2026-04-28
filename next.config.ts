@@ -1,13 +1,38 @@
 import type { NextConfig } from 'next'
 
+const CMS_API_URL = String(process.env.NEXT_PUBLIC_CMS_API_URL || 'https://app.apimstec.com').replace(/\/+$/, '')
+const SITE_DOMAIN = String(process.env.NEXT_PUBLIC_SITE_DOMAIN || 'compresspdf.id')
+  .trim()
+  .toLowerCase()
+  .replace(/^https?:\/\//, '')
+  .replace(/:\d+$/, '')
+  .split('/')[0]
+
 const nextConfig: NextConfig = {
   transpilePackages: ['@quicktoolsone/pdf-compress'],
   serverExternalPackages: ['pdfjs-dist'],
   poweredByHeader: false,
   compress: true,
-  /** Global CMS pushes to `{site}/cms-seo-sync.php` (same as React); forward to App Router API. */
+  /**
+   * Rewrites:
+   * - cms-seo-sync.php: GlobalCMS pushes to `{site}/cms-seo-sync.php`; forward to App Router API.
+   * - /cms-uploads/* and /uploads/*: proxy CMS media so OG / canonical URLs that point at
+   *   the public site (e.g. `https://compresspdf.id/cms-uploads/...webp`) actually resolve
+   *   instead of 404. Targets the same `/{site}/api/public/media?path=...` endpoint that
+   *   `cmsAssetUrl.publicMediaProxyUrl` uses on the client.
+   */
   async rewrites() {
-    return [{ source: '/cms-seo-sync.php', destination: '/api/cms-seo-sync' }]
+    return [
+      { source: '/cms-seo-sync.php', destination: '/api/cms-seo-sync' },
+      {
+        source: '/cms-uploads/:path*',
+        destination: `${CMS_API_URL}/${SITE_DOMAIN}/api/public/media?path=cms-uploads/:path*`,
+      },
+      {
+        source: '/uploads/:path*',
+        destination: `${CMS_API_URL}/${SITE_DOMAIN}/api/public/media?path=uploads/:path*`,
+      },
+    ]
   },
   images: {
     formats: ['image/avif', 'image/webp'],

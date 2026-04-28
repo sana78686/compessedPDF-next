@@ -66,7 +66,7 @@ export default async function EnHomePage() {
   return (
     <>
       <JsonLdScript data={jsonLd} />
-      <h1 className="sr-only">{h.seoHeroH1}</h1>
+      {/* Visible <h1> is rendered inside HomePageClient (.landing-upload-h1) so crawlers see one real heading. */}
       <HomePageClient landingExtrasOnServer homeCmsFromServer={{ html, jsonLd }} />
       {cmsHtmlHasVisibleText(html) ? (
         <section className="landing-cms-body-section" aria-label={homeCmsAria}>
