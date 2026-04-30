@@ -34,7 +34,7 @@
 
 .cms-page-breadcrumb {
   margin-bottom: 0.6rem;
-  font-size: 0.9rem;
+  font-size: 18px;
   color: var(--text-muted);
 }
 
@@ -48,7 +48,7 @@
 }
 
 .cms-page-content {
-  font-size: 1.0625rem;
+  font-size: 18px;
   line-height: 1.7;
   color: var(--text-secondary);
   padding: 0 0 0.5rem;
@@ -163,7 +163,7 @@
 .cms-page-back {
   color: var(--accent-red);
   text-decoration: none;
-  font-size: 0.9375rem;
+  font-size: 18px;
   font-weight: 500;
 }
 
@@ -179,7 +179,7 @@
 
 .cms-page-date {
   display: block;
-  font-size: 0.9375rem;
+  font-size: 18px;
   color: var(--text-muted);
   margin-top: 0.5rem;
 }
@@ -199,7 +199,7 @@
   }
 
   .cms-page-content {
-    font-size: 1rem;
+    font-size: 18px;
   }
 
   .cms-page-content h1 {
@@ -243,7 +243,7 @@
   gap: 0.25rem 1.5rem;
   margin: 0 0 1.5rem;
   padding: 0;
-  font-size: 0.9375rem;
+  font-size: 18px;
   color: var(--text-muted);
   list-style: none;
 }
@@ -297,12 +297,13 @@
 }
 
 .cms-blog-hero-placeholder-text {
-  font-size: 0.875rem;
+  font-size: 18px;
   color: var(--text-muted);
 }
 
 .cms-blog-content {
   padding-top: 0.25rem;
+  font-size: 18px;
 }
 
 /* Rich text from editor: headings, lists, bold, links, hr */
@@ -403,7 +404,7 @@
 .cms-blog-content pre,
 .cms-blog-content code {
   font-family: ui-monospace, monospace;
-  font-size: 0.9em;
+  font-size: 18px;
 }
 
 .cms-blog-content pre {
@@ -457,6 +458,7 @@
 }
 
 .cms-home-cms-body {
+  font-size: 18px;
   text-align: justify;
   hyphens: auto;
   -webkit-hyphens: auto;

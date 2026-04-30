@@ -619,7 +619,7 @@
 }
 
 .landing-card-desc {
-  font-size: 0.9rem;
+  font-size: 18px;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.45;
@@ -678,7 +678,7 @@
 }
 
 .landing-step-desc {
-  font-size: 0.9rem;
+  font-size: 18px;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
@@ -725,7 +725,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.15rem;
-  font-size: 1rem;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
   background: none;
@@ -783,7 +783,7 @@
 
 .landing-faq-answer p {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 18px;
   color: var(--text-secondary);
   line-height: 1.5;
   padding-top: 0.25rem;
@@ -794,7 +794,7 @@
 
 /* Rich-text FAQ answers (CMS Quill HTML) */
 .landing-faq-answer__inner.cms-page-content {
-  font-size: 0.95rem;
+  font-size: 18px;
   color: var(--text-secondary);
   line-height: 1.5;
   padding-top: 0.25rem;

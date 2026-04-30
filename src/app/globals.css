@@ -5,6 +5,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Default body copy — headings keep their own font sizes from components */
+  --font-size-body: 18px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -18,4 +20,29 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-geist-sans), system-ui, -apple-system, Segoe UI, sans-serif;
+  font-size: var(--font-size-body);
+}
+
+/* Default paragraph & inline text (excluding heading stacks) */
+p {
+  font-size: var(--font-size-body);
+}
+
+span {
+  font-size: inherit;
+}
+
+/* Cards & FAQ sections — lock body copy to 18px */
+.card,
+[class*='card'],
+[class*='faq'],
+.dx-faq,
+.dx-faq-q,
+.dx-faq-a-inner,
+.tool-card,
+.tool-card-label,
+.landing-home-content-body,
+.cms-home-cms-body,
+.cms-page-content p {
+  font-size: var(--font-size-body);
 }
