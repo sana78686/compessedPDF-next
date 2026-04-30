@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { supportedLangs, langOptions, defaultLang, langPrefix as lp, writeUserLocalePreference } from '@/i18n/translations'
 import LangFlag from './LangFlag'
+import BrandLogo from './BrandLogo'
+import { COMPRESS_PDF_EN } from '@/constants/brand'
 import { ucWords } from '@/utils/ucWords'
 import './Footer.css'
 
@@ -66,11 +68,20 @@ export default function Footer({
 
   const effectiveLang = supportedLangs.includes(lang) ? lang : defaultLang
   const prefix = lp(effectiveLang)
+  const homeHref = prefix || '/'
 
   return (
     <footer className="footer footer--dark">
       <div className="footer-inner">
         <div className="footer-top">
+          <div className="footer-brand">
+            <BrandLogo
+              href={homeHref}
+              ariaLabel={t('nav.home')}
+              text={COMPRESS_PDF_EN}
+            />
+            <p className="footer-brand-tagline">{t('footerTagline')}</p>
+          </div>
           <div className="footer-columns">
             <div className="footer-col">
               <h3 className="footer-col-title">{t('footerCompany')}</h3>

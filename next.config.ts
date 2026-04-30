@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   /**
+   * Inline critical CSS via Critters so the head <link> stylesheets stop
+   * render-blocking the first paint. Removes the "Render-blocking requests"
+   * Lighthouse insight (~360 ms saving). Stable since Next.js 14.
+   */
+  experimental: {
+    optimizeCss: true,
+  },
+  /**
    * Rewrites:
    * - cms-seo-sync.php: GlobalCMS pushes to `{site}/cms-seo-sync.php`; forward to App Router API.
    * - /cms-uploads/* and /uploads/*: proxy CMS media so OG / canonical URLs that point at

@@ -3,8 +3,8 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getBlogBySlug } from '@/lib/cms/server'
 import { absolutizeCmsHtmlServer, siteOriginFromEnv } from '@/lib/cms/html'
-import { resolveCmsMediaUrlWithOrigin } from '@/utils/cmsAssetUrl'
 import { JsonLdScript } from '@/components/cms/JsonLdScript'
+import { buildCmsMetadata } from '@/lib/cmsMeta'
 import { langPrefix } from '@/i18n/translations'
 import '@/styles/cms-page.css'
 
@@ -24,34 +24,24 @@ export async function generateMetadata({
   try {
     const data = (await getBlogBySlug(slug, 'en')) as Record<string, string | undefined>
     if (data?._seo_redirect) return { title: 'Blog' }
-    const title = String(data?.meta_title || data?.title || 'Blog').trim()
     const description =
-      String(data?.meta_description || data?.excerpt || '').trim() || plainText(String(data?.content || '')).slice(0, 160)
-    const origin = siteOriginFromEnv()
-    const rawImg = data?.og_image || data?.image
-    const ogImage =
-      rawImg && String(rawImg).trim()
-        ? resolveCmsMediaUrlWithOrigin(String(rawImg), origin)
-        : ''
-    return {
-      title,
-      description,
-      alternates: { canonical: `/en/blog/${encodeURIComponent(slug)}` },
-      openGraph: {
-        title,
+      String(data?.meta_description || data?.excerpt || '').trim() ||
+      plainText(String(data?.content || '')).slice(0, 160)
+    return buildCmsMetadata({
+      locale: 'en',
+      path: `/en/blog/${encodeURIComponent(slug)}`,
+      ogLocale: 'en_US',
+      ogType: 'article',
+      pageMeta: {
+        title: data?.meta_title || data?.title,
         description,
-        type: 'article',
-        url: `/en/blog/${encodeURIComponent(slug)}`,
-        locale: 'en_US',
-        ...(ogImage ? { images: [{ url: ogImage, alt: title }] } : {}),
+        keywords: data?.meta_keywords,
+        og_image: data?.og_image,
+        image: data?.image,
       },
-      twitter: {
-        card: 'summary_large_image',
-        title,
-        description,
-        ...(ogImage ? { images: [ogImage] } : {}),
-      },
-    }
+      fallbackTitle: 'Blog',
+      fallbackDescription: '',
+    })
   } catch {
     return { title: 'Blog' }
   }

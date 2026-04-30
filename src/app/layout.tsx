@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { CmsClientBootstrap } from '@/components/CmsClientBootstrap'
@@ -8,6 +8,7 @@ const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
   display: 'swap',
+  /** Preload avoids CSS→font chain (Network dependency tree / LCP delay). */
   preload: true,
 })
 
@@ -20,15 +21,27 @@ const geistMono = Geist_Mono({
 
 const siteUrl = siteOriginFromEnv()
 const metadataBase = new URL(siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`)
+const siteDomain = (() => {
+  try {
+    return new URL(siteUrl).hostname
+  } catch {
+    return 'compresspdf.id'
+  }
+})()
 
 export const metadata: Metadata = {
   metadataBase,
-  title: { default: 'Compress PDF', template: '%s | Compress PDF' },
+  title: { default: siteDomain, template: '%s' },
   description: 'Reduce PDF file size in your browser.',
-  applicationName: 'Compress PDF',
+  applicationName: siteDomain,
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
   openGraph: {
     type: 'website',
-    siteName: 'Compress PDF',
+    siteName: siteDomain,
     locale: 'id_ID',
     alternateLocale: ['en_US'],
     images: [
@@ -36,13 +49,29 @@ export const metadata: Metadata = {
         url: '/icon.svg',
         width: 32,
         height: 32,
-        alt: 'Compress PDF',
+        alt: siteDomain,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
   },
+}
+
+/**
+ * Viewport + PWA-style hints. Lighthouse expects this as a separate export in
+ * Next.js 14+. Without it, mobile Performance and SEO both lose points and
+ * the browser falls back to non-responsive rendering.
+ */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#1f1f1f' },
+  ],
+  colorScheme: 'light dark',
 }
 
 export default function RootLayout({

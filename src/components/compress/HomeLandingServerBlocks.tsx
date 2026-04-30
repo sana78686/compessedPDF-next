@@ -103,40 +103,6 @@ export default function HomeLandingServerBlocks({
         )
       })}
 
-      {sections.length === 0 && (
-        <section className="landing-section landing-how" aria-labelledby="landing-how-heading">
-          <h2 id="landing-how-heading" className="landing-section-title">
-            {howSection?.title?.trim?.() || t(lang, 'landing.howTitle')}
-          </h2>
-          {howSection?.description?.trim?.() ? (
-            <p className="landing-section-subtitle">{howSection.description.trim()}</p>
-          ) : null}
-          <div className="landing-steps">
-            <div className="landing-step">
-              <span className="landing-step-num" aria-hidden="true">
-                1
-              </span>
-              <h3 className="landing-step-title">{t(lang, 'landing.howStep1')}</h3>
-              <p className="landing-step-desc">{t(lang, 'landing.howStep1Desc')}</p>
-            </div>
-            <div className="landing-step">
-              <span className="landing-step-num" aria-hidden="true">
-                2
-              </span>
-              <h3 className="landing-step-title">{t(lang, 'landing.howStep2')}</h3>
-              <p className="landing-step-desc">{t(lang, 'landing.howStep2Desc')}</p>
-            </div>
-            <div className="landing-step">
-              <span className="landing-step-num" aria-hidden="true">
-                3
-              </span>
-              <h3 className="landing-step-title">{t(lang, 'landing.howStep3')}</h3>
-              <p className="landing-step-desc">{t(lang, 'landing.howStep3Desc')}</p>
-            </div>
-          </div>
-        </section>
-      )}
-
       {previewPosts.length > 0 && (
         <section id="landing-blog" className="landing-section landing-blog" aria-labelledby="landing-blog-heading">
           <div className="landing-blog-header">

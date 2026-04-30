@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@quicktoolsone/pdf-compress": "^2.0.0",
-    "bootstrap": "^5.3.8",
     "jspdf": "^4.2.0",
     "next": "15.5.15",
     "pdfjs-dist": "^4.10.38",
@@ -28,11 +27,22 @@
   "overrides": {
     "next": "15.5.15"
   },
+  "browserslist": [
+    "Chrome >= 93",
+    "Firefox >= 92",
+    "Edge >= 93",
+    "Safari >= 15.4",
+    "Opera >= 79",
+    "iOS >= 15.4",
+    "ChromeAndroid >= 93",
+    "FirefoxAndroid >= 92"
+  ],
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "critters": "^0.0.23",
     "eslint": "^9",
     "eslint-config-next": "15.5.15",
     "postcss": "^8",

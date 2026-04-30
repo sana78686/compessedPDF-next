@@ -1,20 +1,18 @@
 import type { Metadata } from 'next'
 import HomePageClient from '@/components/compress/HomePageClient'
 import { translations } from '@/i18n/translations'
-import { socialMetadata } from '@/lib/seoMetadata'
+import { buildCmsMetadata } from '@/lib/cmsMeta'
 
 const h = translations.en
 
-export const metadata: Metadata = {
-  title: h.title,
-  description: h.subtitle,
-  alternates: { canonical: '/en/compress' },
-  ...socialMetadata({
-    title: h.title,
-    description: h.subtitle,
+export async function generateMetadata(): Promise<Metadata> {
+  return buildCmsMetadata({
+    locale: 'en',
     path: '/en/compress',
     ogLocale: 'en_US',
-  }),
+    fallbackTitle: h.title,
+    fallbackDescription: h.subtitle,
+  })
 }
 
 export default function EnCompressPage() {

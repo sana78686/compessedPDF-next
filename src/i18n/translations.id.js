@@ -48,6 +48,7 @@ export default {
   footerResources: 'SUMBER',
   footerLegal: 'LEGAL',
   footerCompany: 'PERUSAHAAN',
+  footerTagline: 'Kompres PDF langsung di browser Anda — cepat, privat, dan gratis.',
   footerHome: 'Beranda',
   footerFeatures: 'Fitur',
   footerPricing: 'Harga',

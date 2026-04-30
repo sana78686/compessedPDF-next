@@ -19,6 +19,8 @@ import '@/styles/cms-page.css'
 /** Served from /public/pdf.worker.min.mjs (copy from pdfjs-dist on install). */
 const pdfWorkerUrl = '/pdf.worker.min.mjs'
 import { cmsHtmlHasVisibleText } from '@/utils/cmsHtmlVisible'
+import { patchCmsHtmlA11y } from '@/lib/cms/html'
+import { absolutizeCmsHtml } from '@/utils/cmsAssetUrl'
 
 const LandingBelowFold = lazy(() => import('./LandingBelowFold'))
 
@@ -62,6 +64,15 @@ function isPdfFile(f) {
   return /\.pdf$/i.test(String(f?.name || ''))
 }
 
+/** Pretty-print a byte size. Pure function so it has zero impact on compression speed. */
+function formatBytes(bytes) {
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes < 0) return '—'
+  if (bytes < 1024) return `${bytes} B`
+  const kb = bytes / 1024
+  if (kb < 1024) return `${kb.toFixed(2)} KB`
+  return `${(kb / 1024).toFixed(2)} MB`
+}
+
 /** DPI and image quality must both be set to valid positive numbers before compress is enabled. */
 function parseCompressionSettings(settings) {
   const d = parseFloat(String(settings.dpi ?? '').trim())
@@ -86,6 +97,9 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
   const router = useRouter()
   const t = useTranslation(lang)
   const lp = langPrefix(lang)
+  /** Home href with NO trailing slash for non-default locales: avoids `/en/` → 308 → `/en`
+   *  redirects that can break client-side navigation state on Next.js App Router. */
+  const homeHref = lp || '/'
   const isResultPath = pathname === `${lp}/compress/result`
   const isCompressPath = pathname === `${lp}/compress`
   const isCompressPage = isCompressPath || isResultPath
@@ -166,7 +180,8 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
     const homePromise = getHomePageContent(lang, publicPathForSeo)
       .then((res) => {
         if (cancelled) return
-        setCmsHomeHtml(typeof res?.content === 'string' ? res.content : '')
+        const raw = typeof res?.content === 'string' ? res.content : ''
+        setCmsHomeHtml(patchCmsHtmlA11y(absolutizeCmsHtml(raw)))
         const graph = res?.json_ld?.['@graph']
         setHomeJsonLd(Array.isArray(graph) && graph.length > 0 ? res.json_ld : null)
       })
@@ -272,8 +287,8 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
       setFiles(sf)
       return
     }
-    router.replace(`${lp}/`)
-  }, [isCompressPath, files.length, router, lp])
+    router.replace(homeHref)
+  }, [isCompressPath, files.length, router, homeHref])
 
   const handleFileSelect = useCallback((e) => {
     const selected = Array.from(e.target.files || []).filter(isPdfFile)
@@ -355,7 +370,7 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
     setFiles(next)
     if (!next.length) {
       clearCompressionSession()
-      router.replace(`${lp}/`)
+      router.replace(homeHref)
     } else {
       setSessionFiles(next)
     }
@@ -445,19 +460,21 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
       : 0
 
     try {
-      const [pdfjsLib, { jsPDF }] = await Promise.all([
-        import('pdfjs-dist'),
-        import('jspdf'),
-      ])
-      if (pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = await getPdfWorkerSrc()
-      }
+      /**
+       * Real PDF compressor (multi-strategy, WASM/pdf-lib backed).
+       * - 'balanced' preset = lossless structural pass + image re-encode if it helps;
+       *   the library itself picks whichever variant is smallest.
+       * - We still keep an `alreadyOptimized` fallback below so the user never gets
+       *   a file that's *bigger* than what they uploaded.
+       */
+      const { compress } = await import('@quicktoolsone/pdf-compress')
 
       const results = []
 
       for (let fi = 0; fi < nFiles; fi++) {
         const file = fileList[fi]
         const originalSize = file.size
+        const baseName = String(file.name || 'document').replace(/\.pdf$/i, '')
 
         setCompressFileRows((rows) => rows.map((row, i) => ({
           ...row,
@@ -468,62 +485,67 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
           percent: Math.round((fi / Math.max(nFiles, 1)) * 100),
         })
 
-        let blobUrl = URL.createObjectURL(file)
+        const inputBuffer = await file.arrayBuffer()
+
+        /** Run the real compressor. If it throws, we fall back to the original file. */
+        let compressedBuffer = null
         try {
-          const pdf = await loadPdfFromUrl(pdfjsLib, blobUrl)
-          const numPages = pdf.numPages
-          const doc = new jsPDF({ unit: 'px', compress: true })
-          const scale = Math.min(2.5, dpi / 72)
-
-          for (let i = 1; i <= numPages; i++) {
-            const base = fi / nFiles
-            const frac = i / numPages / nFiles
-            setProgress({
-              message: `${t('progressPage')} ${i}/${numPages} — ${file.name}`,
-              percent: Math.min(99, Math.round((base + frac) * 100)),
-            })
-            const page = await pdf.getPage(i)
-            const viewport = page.getViewport({ scale: 1 })
-            const viewportScaled = page.getViewport({ scale })
-            const canvas = document.createElement('canvas')
-            canvas.width = viewportScaled.width
-            canvas.height = viewportScaled.height
-            const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: false })
-            await page.render({
-              canvasContext: ctx,
-              viewport: viewportScaled,
-            }).promise
-            const dataUrl = String(canvas.toDataURL('image/jpeg', quality))
-            const w = Number(viewport.width)
-            const h = Number(viewport.height)
-            if (i > 1) {
-              doc.addPage([w, h])
-            } else {
-              doc.addPage([w, h])
-              doc.deletePage(1)
-            }
-            doc.addImage(dataUrl, 'JPEG', 0, 0, w, h, undefined, 'FAST')
-          }
-
-          let outputBuffer = doc.output('arraybuffer')
-          if (colorIsGray) {
-            setProgress({ message: t('progressGrayscale'), percent: Math.min(99, Math.round(((fi + 0.9) / nFiles) * 100)) })
-            outputBuffer = await applyGrayscaleToPdf(outputBuffer, dpi, quality)
-          }
-
-          const blob = new Blob([outputBuffer], { type: 'application/pdf' })
-          const newSize = blob.size
-          const percentageSaved = originalSize > 0 ? (1 - newSize / originalSize) * 100 : 0
-          results.push({
-            blob,
-            fileName: String(file.name || 'document').replace(/\.pdf$/i, '') + '-compressed.pdf',
-            originalSize,
-            newSize,
-            percentageSaved,
+          const result = await compress(inputBuffer, {
+            preset: 'balanced',
+            preserveMetadata: true,
+            targetDPI: dpi,
+            jpegQuality: quality,
+            gracefulDegradation: true,
+            onProgress: (event) => {
+              const base = fi / nFiles
+              const fileFrac = (typeof event?.progress === 'number' ? event.progress : 0) / 100 / nFiles
+              setProgress({
+                message: event?.message
+                  ? `${event.message} — ${file.name}`
+                  : `${t('progressPage')} — ${file.name}`,
+                percent: Math.min(99, Math.round((base + fileFrac) * 100)),
+              })
+            },
           })
-        } finally {
-          URL.revokeObjectURL(blobUrl)
+          compressedBuffer = result?.pdf ?? null
+        } catch {
+          compressedBuffer = null
         }
+
+        /** Optional grayscale post-process. Only keep it if it actually helps the size. */
+        if (compressedBuffer && colorIsGray) {
+          setProgress({
+            message: t('progressGrayscale'),
+            percent: Math.min(99, Math.round(((fi + 0.9) / nFiles) * 100)),
+          })
+          try {
+            const grayBuffer = await applyGrayscaleToPdf(compressedBuffer, dpi, quality)
+            if (grayBuffer && grayBuffer.byteLength < compressedBuffer.byteLength) {
+              compressedBuffer = grayBuffer
+            }
+          } catch {
+            /* keep color output if grayscale step fails */
+          }
+        }
+
+        const compressedSize = compressedBuffer ? compressedBuffer.byteLength : Number.POSITIVE_INFINITY
+        const alreadyOptimized = !compressedBuffer || compressedSize >= originalSize
+        const finalBuffer = alreadyOptimized ? inputBuffer : compressedBuffer
+        const finalSize = alreadyOptimized ? originalSize : compressedSize
+        const finalName = alreadyOptimized ? `${baseName}.pdf` : `${baseName}-compressed.pdf`
+        const percentageSaved = alreadyOptimized
+          ? 0
+          : originalSize > 0
+            ? (1 - finalSize / originalSize) * 100
+            : 0
+        results.push({
+          blob: new Blob([finalBuffer], { type: 'application/pdf' }),
+          fileName: finalName,
+          originalSize,
+          newSize: finalSize,
+          percentageSaved,
+          alreadyOptimized,
+        })
 
         setCompressFileRows((rows) => rows.map((row, i) => ({
           ...row,
@@ -595,7 +617,7 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
     setCompressionResults(null)
     setFiles([])
     setError(null)
-    router.replace(`${lp}/`)
+    router.replace(homeHref)
   }
 
   return (
@@ -831,10 +853,28 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
             {compressionResults.length === 1 ? (
               <>
                 <p className="result-title">
-                  {t('resultReduced')} <strong>{compressionResults[0].percentageSaved?.toFixed(2) ?? 0}%</strong>.
+                  {compressionResults[0].alreadyOptimized ? (
+                    <span>Already optimized — original file kept.</span>
+                  ) : (
+                    <>
+                      {t('resultReduced')}{' '}
+                      <strong>{compressionResults[0].percentageSaved?.toFixed(2) ?? 0}%</strong>.
+                    </>
+                  )}
                 </p>
                 <p className="result-filename">
-                  {compressionResults[0].fileName} – {(compressionResults[0].blob.size / 1024).toFixed(2)} KB
+                  {compressionResults[0].fileName}
+                </p>
+                <p className="result-size-line">
+                  {compressionResults[0].alreadyOptimized ? (
+                    <span className="result-size-after">{formatBytes(compressionResults[0].originalSize)}</span>
+                  ) : (
+                    <>
+                      <span className="result-size-before">{formatBytes(compressionResults[0].originalSize)}</span>
+                      <span className="result-size-arrow" aria-hidden="true"> → </span>
+                      <span className="result-size-after">{formatBytes(compressionResults[0].newSize)}</span>
+                    </>
+                  )}
                 </p>
               </>
             ) : (
@@ -846,7 +886,20 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
                       <div className="result-multi-info">
                         <span className="result-multi-name">{r.fileName}</span>
                         <span className="result-multi-meta">
-                          {(r.blob.size / 1024).toFixed(2)} KB · {r.percentageSaved?.toFixed(1) ?? 0}% {t('resultSavedSuffix')}
+                          {r.alreadyOptimized ? (
+                            <>
+                              <span className="result-size-after">{formatBytes(r.originalSize)}</span>
+                              {' · already optimized'}
+                            </>
+                          ) : (
+                            <>
+                              <span className="result-size-before">{formatBytes(r.originalSize)}</span>
+                              <span className="result-size-arrow" aria-hidden="true"> → </span>
+                              <span className="result-size-after">{formatBytes(r.newSize)}</span>
+                              {' · '}
+                              {r.percentageSaved?.toFixed(1) ?? 0}% {t('resultSavedSuffix')}
+                            </>
+                          )}
                         </span>
                       </div>
                       <button

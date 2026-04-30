@@ -1,10 +1,29 @@
-/* Dark multi-column footer – use element+class so we override HomePage.css on CMS pages */
+/* ==============================================================
+   Refreshed dark footer
+   - Brand column on the left (logo + tagline)
+   - Link columns on the right (Company / Other / Legal)
+   - Subtle red top accent and refined bottom bar
+   - Element + class selectors override HomePage.css on CMS pages
+   ============================================================== */
 footer.footer.footer--dark {
-  background: #2d2d2d !important;
+  background: #1f1f1f;
   color: #fff;
   margin-top: auto;
   border-top: none;
-  padding: 2.5rem 1.5rem 1.5rem;
+  padding: 3rem 1.5rem 1.25rem;
+  position: relative;
+}
+
+/* Subtle red accent line at the very top of the footer */
+footer.footer.footer--dark::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #e85555 0%, #b82e2e 100%);
+  opacity: 0.85;
 }
 
 footer.footer.footer--dark .footer-inner {
@@ -13,55 +32,95 @@ footer.footer.footer--dark .footer-inner {
   padding: 0;
 }
 
+/* Top: brand on the left, link columns on the right */
 footer.footer.footer--dark .footer-top {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem 2.5rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2.5rem 3rem;
 }
 
+/* Brand column (logo + tagline) */
+footer.footer.footer--dark .footer-brand {
+  flex: 1 1 280px;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* Logo override for dark background — the wordmark text is dark by default,
+   so we whitewash it inside the footer only. The icon SVG already has its
+   own red gradient and looks fine on dark. */
+footer.footer.footer--dark .footer-brand .logo,
+footer.footer.footer--dark .footer-brand .logo:hover {
+  color: #fff;
+}
+
+footer.footer.footer--dark .footer-brand .logo-wordmark-text {
+  color: #fff;
+}
+
+footer.footer.footer--dark .footer-brand .logo--brand:hover .logo-wordmark-text {
+  color: #ffb4b4;
+}
+
+footer.footer.footer--dark .footer-brand-tagline {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #d2d2d2;
+  max-width: 32ch;
+}
+
+/* Link columns */
 footer.footer.footer--dark .footer-columns {
+  flex: 2 1 480px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   gap: 2rem 2.5rem;
-  width: 100%;
 }
 
 footer.footer.footer--dark .footer-col {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
   min-width: 0;
 }
 
 footer.footer.footer--dark .footer-col-title {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #fff;
-  margin: 0 0 0.25rem;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 0.5rem;
 }
 
 footer.footer.footer--dark .footer-col a {
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.85);
+  color: #d8d8d8;
   text-decoration: none;
+  transition: color 0.15s ease, transform 0.15s ease;
+  display: inline-block;
+  width: fit-content;
 }
 
 footer.footer.footer--dark .footer-col a:hover {
-  color: #fff;
-  text-decoration: underline;
+  color: #ff8c8c;
+  transform: translateX(2px);
 }
 
 /* Divider */
 footer.footer.footer--dark .footer-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.15);
-  margin: 1.5rem 0 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 2rem 0 1.25rem;
 }
 
-/* Bottom bar: language (left) + social (center) + copyright (right) */
+/* Bottom bar: language (left) + copyright (right) */
 footer.footer.footer--dark .footer-bottom {
   display: flex;
   flex-wrap: wrap;
@@ -80,6 +139,7 @@ footer.footer.footer--dark .footer-bottom .footer-social-copy {
   min-width: 0;
 }
 
+/* Language switcher button */
 footer.footer.footer--dark .footer-lang-wrap {
   position: relative;
 }
@@ -88,19 +148,19 @@ footer.footer.footer--dark .footer-lang-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.85rem;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 6px;
+  padding: 0.5rem 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
   color: #fff;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
 }
 
 footer.footer.footer--dark .footer-lang-btn:hover {
-  border-color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 footer.footer.footer--dark .footer-lang-icon {
@@ -116,21 +176,21 @@ footer.footer.footer--dark .footer-lang-icon .lang-flag-img {
 
 footer.footer.footer--dark .footer-lang-chevron {
   font-size: 0.5rem;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 footer.footer.footer--dark .footer-lang-menu {
   position: absolute;
-  bottom: calc(100% + 6px);
+  bottom: calc(100% + 8px);
   left: 0;
-  min-width: 140px;
+  min-width: 160px;
   margin: 0;
-  padding: 0.35rem 0;
+  padding: 0.4rem 0;
   list-style: none;
-  background: #333;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  background: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
   z-index: 100;
 }
 
@@ -138,10 +198,11 @@ footer.footer.footer--dark .footer-lang-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.55rem 1rem;
   font-size: 0.9rem;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
+  transition: background 0.15s ease;
 }
 
 footer.footer.footer--dark .footer-lang-item-flag {
@@ -151,73 +212,53 @@ footer.footer.footer--dark .footer-lang-item-flag {
 }
 
 footer.footer.footer--dark .footer-lang-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-footer.footer.footer--dark .footer-social-copy {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem 1.5rem;
-}
-
-footer.footer.footer--dark .footer-social {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-footer.footer.footer--dark .footer-social a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
-  text-decoration: none;
-  border-radius: 6px;
-  transition: background 0.2s;
 }
 
-footer.footer.footer--dark .footer-social a:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-footer.footer.footer--dark .footer-social-icon {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1;
-}
-
+/* Copyright */
 footer.footer.footer--dark .footer-copy {
   margin: 0;
   padding: 0;
   border: none;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  color: #c4c4c4;
   text-align: right;
 }
 
 footer.footer.footer--dark .footer-copy a {
-  color: rgba(255, 255, 255, 0.85);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  color: #eaeaea;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  padding-bottom: 1px;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 footer.footer.footer--dark .footer-copy a:hover {
-  color: #fff;
+  color: #ff8c8c;
+  border-color: #ff8c8c;
 }
 
+/* Responsive */
 @media (max-width: 900px) {
   footer.footer.footer--dark .footer-top {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 2rem;
+  }
+
+  footer.footer.footer--dark .footer-brand {
+    max-width: none;
   }
 }
 
 @media (max-width: 600px) {
+  footer.footer.footer--dark {
+    padding: 2.25rem 1.25rem 1rem;
+  }
+
   footer.footer.footer--dark .footer-columns {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 1.5rem;
   }
 
@@ -226,9 +267,10 @@ footer.footer.footer--dark .footer-copy a:hover {
     align-items: flex-start;
   }
 
-  footer.footer.footer--dark .footer-social-copy {
+  footer.footer.footer--dark .footer-bottom .footer-social-copy {
     flex-direction: column;
     align-items: flex-start;
+    justify-content: flex-start;
   }
 
   footer.footer.footer--dark .footer-copy {

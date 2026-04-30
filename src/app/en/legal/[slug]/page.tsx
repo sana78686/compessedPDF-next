@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { getLegalPage } from '@/lib/cms/server'
 import { absolutizeCmsHtmlServer, siteOriginFromEnv } from '@/lib/cms/html'
 import { JsonLdScript } from '@/components/cms/JsonLdScript'
+import { buildCmsMetadata } from '@/lib/cmsMeta'
 import '@/styles/cms-page.css'
 
 const VALID = ['terms', 'privacy-policy', 'disclaimer', 'about-us', 'cookie-policy']
@@ -23,9 +24,22 @@ export async function generateMetadata({
   const { slug } = await params
   if (!VALID.includes(slug)) return { title: 'Legal' }
   try {
-    const data = (await getLegalPage(slug, 'en')) as { title?: string; content?: string }
-    const title = String(data?.title || slug)
-    return { title, description: plainText(String(data?.content || '')).slice(0, 160) }
+    const data = (await getLegalPage(slug, 'en')) as Record<string, string | undefined>
+    return buildCmsMetadata({
+      locale: 'en',
+      path: `/en/legal/${encodeURIComponent(slug)}`,
+      ogLocale: 'en_US',
+      pageMeta: {
+        title: data?.meta_title || data?.title,
+        description:
+          data?.meta_description || plainText(String(data?.content || '')).slice(0, 160),
+        keywords: data?.meta_keywords,
+        og_image: data?.og_image,
+        image: data?.image,
+      },
+      fallbackTitle: slug,
+      fallbackDescription: '',
+    })
   } catch {
     return { title: 'Legal' }
   }

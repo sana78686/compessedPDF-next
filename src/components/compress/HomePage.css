@@ -4,7 +4,8 @@
   --accent-red-hover: #c93535;
   --text-primary: #333333;
   --text-secondary: #555555;
-  --text-muted: #888888;
+  /* ≥4.5:1 on white for 18px body copy (was #888 → failed WCAG AA) */
+  --text-muted: #595959;
   --bg-page: #ffffff;
   --bg-header: #ffffff;
   --border-light: #e8e8e8;
@@ -993,8 +994,9 @@
   margin-inline: auto;
 }
 
+/* WCAG AA: white on #e03d3d fails (~4:1); this red is ~6:1 with #fff at normal/large text */
 .btn-select-pdf {
-  background: var(--accent-red);
+  background: #b71c1c;
   color: #fff;
   border: none;
   padding: 1.25rem 2.5rem;
@@ -1003,7 +1005,7 @@
   letter-spacing: 0.02em;
   border-radius: 10px;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(224, 61, 61, 0.4);
+  box-shadow: 0 4px 20px rgba(183, 28, 28, 0.42);
   transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
   min-width: min(100%, 280px);
   min-height: 64px;
@@ -1013,12 +1015,12 @@
 }
 
 .btn-select-pdf:hover:not(:disabled) {
-  background: var(--accent-red-hover);
-  box-shadow: 0 6px 24px rgba(224, 61, 61, 0.45);
+  background: #971818;
+  box-shadow: 0 6px 24px rgba(151, 24, 24, 0.48);
 }
 
 .btn-select-pdf:focus-visible {
-  outline: 3px solid var(--accent-red);
+  outline: 3px solid #7a1414;
   outline-offset: 3px;
 }
 
@@ -1557,7 +1559,31 @@
 .result-filename {
   font-size: 0.9rem;
   color: var(--text-secondary);
+  margin: 0 0 0.35rem;
+}
+
+.result-size-line {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
   margin: 0 0 1.5rem;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.result-size-before {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.result-size-arrow {
+  color: var(--text-muted);
+}
+
+.result-size-after {
+  color: #047857;
+  font-weight: 600;
 }
 
 .result-actions {

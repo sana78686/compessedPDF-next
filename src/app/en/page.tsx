@@ -3,7 +3,7 @@ import HomePageClient from '@/components/compress/HomePageClient'
 import HomeLandingServerBlocks from '@/components/compress/HomeLandingServerBlocks'
 import { JsonLdScript } from '@/components/cms/JsonLdScript'
 import { translations } from '@/i18n/translations'
-import { socialMetadata } from '@/lib/seoMetadata'
+import { buildCmsMetadata } from '@/lib/cmsMeta'
 import { getHomePageContent, getBlogs, getHomeCards, getSections } from '@/lib/cms/server'
 import { normalizeBlogsResponse } from '@/lib/cms/normalizeBlogs'
 import { absolutizeCmsHtmlServer, siteOriginFromEnv } from '@/lib/cms/html'
@@ -15,16 +15,14 @@ const homeCmsAria = translations.en.landing.cmsSectionAria
 
 export const revalidate = 60
 
-export const metadata: Metadata = {
-  title: h.seoHeroH1,
-  description: h.subtitle,
-  alternates: { canonical: '/en' },
-  ...socialMetadata({
-    title: h.seoHeroH1,
-    description: h.subtitle,
+export async function generateMetadata(): Promise<Metadata> {
+  return buildCmsMetadata({
+    locale: 'en',
     path: '/en',
     ogLocale: 'en_US',
-  }),
+    fallbackTitle: h.seoHeroH1,
+    fallbackDescription: h.subtitle,
+  })
 }
 
 export default async function EnHomePage() {

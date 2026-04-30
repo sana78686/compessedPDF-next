@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { getPageBySlug } from '@/lib/cms/server'
 import { absolutizeCmsHtmlServer, siteOriginFromEnv } from '@/lib/cms/html'
 import { JsonLdScript } from '@/components/cms/JsonLdScript'
+import { buildCmsMetadata } from '@/lib/cmsMeta'
 import { langPrefix } from '@/i18n/translations'
 import '@/styles/cms-page.css'
 
@@ -23,8 +24,21 @@ export async function generateMetadata({
   try {
     const data = (await getPageBySlug(slug, 'id')) as Record<string, string | undefined>
     if (data?._seo_redirect) return { title: 'Page' }
-    const title = String(data?.title || slug)
-    return { title, description: plainText(String(data?.content || '')).slice(0, 160) }
+    return buildCmsMetadata({
+      locale: 'id',
+      path: `/page/${encodeURIComponent(slug)}`,
+      ogLocale: 'id_ID',
+      pageMeta: {
+        title: data?.meta_title || data?.title,
+        description:
+          data?.meta_description || plainText(String(data?.content || '')).slice(0, 160),
+        keywords: data?.meta_keywords,
+        og_image: data?.og_image,
+        image: data?.image,
+      },
+      fallbackTitle: slug,
+      fallbackDescription: '',
+    })
   } catch {
     return { title: 'Page' }
   }

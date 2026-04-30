@@ -52,6 +52,7 @@ export const translations = {
     footerResources: 'RESOURCES',
     footerLegal: 'LEGAL',
     footerCompany: 'COMPANY',
+    footerTagline: 'Compress PDFs right in your browser — fast, private, and free.',
     footerHome: 'Home',
     footerFeatures: 'Features',
     footerPricing: 'Pricing',

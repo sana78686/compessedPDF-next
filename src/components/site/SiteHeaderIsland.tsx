@@ -49,11 +49,13 @@ export default function SiteHeaderIsland({ footerPages }: { footerPages: CmsNavP
   }, [langDropdownOpen])
 
   const lp = langPrefix(lang)
+  /** No trailing slash on `/en` — avoids 308 redirect that can corrupt client-side nav. */
+  const homeHref = lp || '/'
 
   return (
     <header className="header">
       <div className="header-inner header-inner--minimal">
-        <BrandLogo href={`${lp}/`} ariaLabel={t('nav.home')} text={COMPRESS_PDF_EN} />
+        <BrandLogo href={homeHref} ariaLabel={t('nav.home')} text={COMPRESS_PDF_EN} />
         {headerCmsPages.length > 0 && (
           <nav className="header-cms-nav" aria-label="Site pages">
             <ul className="header-cms-nav-list">

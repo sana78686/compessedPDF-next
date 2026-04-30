@@ -1,22 +1,20 @@
 import type { Metadata } from 'next'
 import { BlogListView } from '@/components/blog/BlogListView'
 import { translations } from '@/i18n/translations'
-import { socialMetadata } from '@/lib/seoMetadata'
+import { buildCmsMetadata } from '@/lib/cmsMeta'
 
 export const revalidate = 60
 
 const b = translations.en.blog
 
-export const metadata: Metadata = {
-  title: b.listTitle,
-  description: b.listIntro,
-  alternates: { canonical: '/en/blog' },
-  ...socialMetadata({
-    title: b.listTitle,
-    description: b.listIntro,
+export async function generateMetadata(): Promise<Metadata> {
+  return buildCmsMetadata({
+    locale: 'en',
     path: '/en/blog',
     ogLocale: 'en_US',
-  }),
+    fallbackTitle: b.listTitle,
+    fallbackDescription: b.listIntro,
+  })
 }
 
 export default function EnBlogListPage() {
