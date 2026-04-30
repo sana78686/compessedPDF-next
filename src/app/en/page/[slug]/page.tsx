@@ -6,7 +6,6 @@ import { absolutizeCmsHtmlServer, siteOriginFromEnv } from '@/lib/cms/html'
 import { JsonLdScript } from '@/components/cms/JsonLdScript'
 import { buildCmsMetadata } from '@/lib/cmsMeta'
 import { langPrefix } from '@/i18n/translations'
-import '@/styles/cms-page.css'
 
 export const revalidate = 60
 

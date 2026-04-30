@@ -14,13 +14,12 @@ import {
   clearCompressionSession,
 } from '@/lib/compress-session'
 import JsonLd from '@/components/JsonLd'
-import './HomePage.css'
-import '@/styles/cms-page.css'
+import { cmsHtmlHasVisibleText } from '@/utils/cmsHtmlVisible'
+import { patchCmsHtmlA11y, rewriteHtmlSiteOrigin, siteOriginFromEnv } from '@/lib/cms/html'
+import { absolutizeCmsHtml } from '@/utils/cmsAssetUrl'
+
 /** Served from /public/pdf.worker.min.mjs (copy from pdfjs-dist on install). */
 const pdfWorkerUrl = '/pdf.worker.min.mjs'
-import { cmsHtmlHasVisibleText } from '@/utils/cmsHtmlVisible'
-import { patchCmsHtmlA11y } from '@/lib/cms/html'
-import { absolutizeCmsHtml } from '@/utils/cmsAssetUrl'
 
 const LandingBelowFold = lazy(() => import('./LandingBelowFold'))
 
@@ -181,7 +180,11 @@ export default function HomePageClient({ homeCmsFromServer, landingExtrasOnServe
       .then((res) => {
         if (cancelled) return
         const raw = typeof res?.content === 'string' ? res.content : ''
-        setCmsHomeHtml(patchCmsHtmlA11y(absolutizeCmsHtml(raw)))
+        const prepared = rewriteHtmlSiteOrigin(
+          patchCmsHtmlA11y(absolutizeCmsHtml(raw)),
+          siteOriginFromEnv(),
+        )
+        setCmsHomeHtml(prepared)
         const graph = res?.json_ld?.['@graph']
         setHomeJsonLd(Array.isArray(graph) && graph.length > 0 ? res.json_ld : null)
       })

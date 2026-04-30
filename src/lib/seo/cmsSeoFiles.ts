@@ -28,10 +28,54 @@ async function readPublicRootFile(name: string): Promise<string | null> {
   }
 }
 
+/**
+ * Align every `<loc>` with `NEXT_PUBLIC_SITE_ORIGIN` (fixes Ahrefs “non-canonical page in sitemap”
+ * when synced XML uses apex `https://compresspdf.id` but HTML canonical is `https://www.…`).
+ */
+export function normalizeSitemapXmlLocations(xml: string, preferredOrigin: string): string {
+  const base = preferredOrigin.replace(/\/+$/, '')
+  let apex: string
+  try {
+    apex = new URL(base.includes('://') ? base : `https://${base}`).hostname.replace(/^www\./i, '')
+  } catch {
+    return xml
+  }
+  const esc = apex.replace(/\./g, '\\.')
+  return xml.replace(
+    new RegExp(`<loc>\\s*(https?:\\/\\/(?:www\\.)?${esc}[^<]*)</loc>`, 'gi'),
+    (_full, inner: string) => {
+      try {
+        const u = new URL(inner.trim())
+        const out = new URL(`${u.pathname}${u.search}${u.hash}`, `${base}/`).href
+        return `<loc>${out}</loc>`
+      } catch {
+        return _full as string
+      }
+    },
+  )
+}
+
+/** Point `Sitemap:` lines at the preferred origin (same host as canonical). */
+export function normalizeRobotsSitemapLines(body: string, preferredOrigin: string): string {
+  const base = preferredOrigin.replace(/\/+$/, '')
+  let apex: string
+  try {
+    apex = new URL(base.includes('://') ? base : `https://${base}`).hostname.replace(/^www\./i, '')
+  } catch {
+    return body
+  }
+  const esc = apex.replace(/\./g, '\\.')
+  return body.replace(
+    new RegExp(`^([Ss]itemap:\\s*)(https?:\\/\\/(?:www\\.)?${esc}\\S*)`, 'gim'),
+    `$1${base}/sitemap.xml`,
+  )
+}
+
 /** 1) `public/robots.txt` after CMS POST sync. 2) Laravel `{CMS}/{domain}/robots.txt`. 3) null. */
 export async function resolveRobotsTxtBody(): Promise<string | null> {
+  const pref = siteOriginFromEnv()
   const synced = await readPublicRootFile('robots.txt')
-  if (synced) return synced
+  if (synced) return normalizeRobotsSitemapLines(synced, pref)
 
   const url = cmsTenantSeoUrl('robots.txt')
   try {
@@ -43,7 +87,7 @@ export async function resolveRobotsTxtBody(): Promise<string | null> {
     const text = await res.text()
     if (!text.trim()) return null
     if (looksLikeHtmlDocument(text)) return null
-    return text
+    return normalizeRobotsSitemapLines(text, pref)
   } catch {
     return null
   }
@@ -51,8 +95,9 @@ export async function resolveRobotsTxtBody(): Promise<string | null> {
 
 /** 1) `public/sitemap.xml` after sync. 2) Laravel `{CMS}/{domain}/sitemap.xml`. 3) null. */
 export async function resolveSitemapXmlBody(): Promise<string | null> {
+  const pref = siteOriginFromEnv()
   const synced = await readPublicRootFile('sitemap.xml')
-  if (synced) return synced
+  if (synced) return normalizeSitemapXmlLocations(synced, pref)
 
   const url = cmsTenantSeoUrl('sitemap.xml')
   try {
@@ -64,7 +109,7 @@ export async function resolveSitemapXmlBody(): Promise<string | null> {
     const text = await res.text()
     if (!text.trim()) return null
     if (looksLikeHtmlDocument(text)) return null
-    return text
+    return normalizeSitemapXmlLocations(text, pref)
   } catch {
     return null
   }

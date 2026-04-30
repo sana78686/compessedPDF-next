@@ -5,7 +5,6 @@ import { getLegalPage } from '@/lib/cms/server'
 import { absolutizeCmsHtmlServer, siteOriginFromEnv } from '@/lib/cms/html'
 import { JsonLdScript } from '@/components/cms/JsonLdScript'
 import { buildCmsMetadata } from '@/lib/cmsMeta'
-import '@/styles/cms-page.css'
 
 const VALID = ['terms', 'privacy-policy', 'disclaimer', 'about-us', 'cookie-policy']
 

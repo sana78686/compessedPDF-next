@@ -68,6 +68,36 @@ export function patchCmsHtmlA11y(html: string): string {
 }
 
 /**
+ * Rewrite same-site `href` / `src` to match `NEXT_PUBLIC_SITE_ORIGIN` (https + www vs apex).
+ * Stops Ahrefs “HTTP internal links” / redirect hops when CMS outputs `http://…` or wrong host.
+ */
+export function rewriteHtmlSiteOrigin(html: string, preferredOrigin: string): string {
+  if (!html || typeof html !== 'string') return html
+  const pref = preferredOrigin.replace(/\/+$/, '')
+  let apex: string
+  try {
+    const u = new URL(pref.includes('://') ? pref : `https://${pref}`)
+    apex = u.hostname.replace(/^www\./i, '')
+  } catch {
+    return html
+  }
+  const esc = apex.replace(/\./g, '\\.')
+  return html.replace(
+    new RegExp(`(\\b(?:href|src)\\s*=\\s*)(["'])(https?:\\/\\/(?:www\\.)?${esc})([^"']*)\\2`, 'gi'),
+    (_full, lead: string, q: string, _oldBase: string, tail: string) => {
+      const t = tail ?? ''
+      const pathOnly = t.startsWith('/') ? t : `/${t || '/'}`
+      try {
+        const out = new URL(pathOnly, `${pref}/`).href
+        return `${lead}${q}${out}${q}`
+      } catch {
+        return _full as string
+      }
+    },
+  )
+}
+
+/**
  * Fix rich-text HTML for SSR: resolve relative CMS paths using public site origin.
  */
 export function absolutizeCmsHtmlServer(html: string, siteOrigin: string): string {
@@ -90,7 +120,7 @@ export function absolutizeCmsHtmlServer(html: string, siteOrigin: string): strin
       return `${attr}=${q}${origin}${urlPart.startsWith('/') ? '' : '/'}${urlPart}${q}`
     },
   )
-  return patchCmsHtmlA11y(rewritten)
+  return patchCmsHtmlA11y(rewriteHtmlSiteOrigin(rewritten, origin))
 }
 
 export function siteOriginFromEnv(): string {

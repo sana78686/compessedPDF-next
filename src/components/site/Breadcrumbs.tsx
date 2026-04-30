@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation'
 import { useTranslation } from '@/i18n/useTranslation'
 import { usePathLang } from '@/hooks/usePathLang'
 import { buildCompressPdfBreadcrumbItems } from '@/utils/breadcrumbTrail'
-import './Breadcrumbs.css'
 
 export default function Breadcrumbs() {
   const lang = usePathLang()

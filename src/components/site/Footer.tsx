@@ -7,7 +7,6 @@ import LangFlag from './LangFlag'
 import BrandLogo from './BrandLogo'
 import { COMPRESS_PDF_EN } from '@/constants/brand'
 import { ucWords } from '@/utils/ucWords'
-import './Footer.css'
 
 const LEGAL_SLUG_ORDER = ['terms', 'privacy-policy', 'disclaimer', 'about-us', 'cookie-policy']
 
@@ -85,6 +84,7 @@ export default function Footer({
           <div className="footer-columns">
             <div className="footer-col">
               <h3 className="footer-col-title">{t('footerCompany')}</h3>
+              <a href={`${prefix}/compress`}>{t('footerCompress')}</a>
               <a href={`${prefix}/blog`}>{t('footerBlog')}</a>
               <a href={`${prefix}/contact`}>{t('footerContact')}</a>
             </div>

@@ -36,4 +36,4 @@ Allow: /
 User-agent: Qwantify
 Allow: /
 
-Sitemap: https://compresspdf.id/sitemap.xml
+Sitemap: https://www.compresspdf.id/sitemap.xml

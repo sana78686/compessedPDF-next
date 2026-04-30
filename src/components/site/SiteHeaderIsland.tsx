@@ -70,6 +70,9 @@ export default function SiteHeaderIsland({ footerPages }: { footerPages: CmsNavP
           </nav>
         )}
         <div className="header-actions">
+          <Link href={`${lp}/compress`} className="header-compress-link">
+            {t('footerCompress')}
+          </Link>
           <div className="lang-dropdown" ref={langDropdownRef}>
             <button
               type="button"

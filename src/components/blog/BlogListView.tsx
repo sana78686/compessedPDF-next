@@ -5,7 +5,6 @@ import { siteOriginFromEnv } from '@/lib/cms/html'
 import { normalizeBlogsResponse, type BlogPostPreview } from '@/lib/cms/normalizeBlogs'
 import { translations, langPrefix } from '@/i18n/translations'
 import BlogCardCover from '@/components/blog/BlogCardCover'
-import '@/styles/BlogListPage.css'
 
 type Locale = 'id' | 'en'
 

@@ -8,7 +8,6 @@ import { getHomePageContent, getBlogs, getHomeCards, getSections } from '@/lib/c
 import { normalizeBlogsResponse } from '@/lib/cms/normalizeBlogs'
 import { absolutizeCmsHtmlServer, siteOriginFromEnv } from '@/lib/cms/html'
 import { cmsHtmlHasVisibleText } from '@/utils/cmsHtmlVisible'
-import '@/styles/cms-page.css'
 
 const h = translations.id
 const homeCmsAria = translations.id.landing.cmsSectionAria

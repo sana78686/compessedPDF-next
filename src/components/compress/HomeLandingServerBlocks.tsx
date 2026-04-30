@@ -3,9 +3,6 @@ import { getTranslation, langPrefix } from '@/i18n/translations'
 import type { BlogPostPreview } from '@/lib/cms/normalizeBlogs'
 import { LandingMediaIcon, CARD_ICON_EMOJI } from '@/components/compress/landingFoldRender'
 import BlogCardCover from '@/components/blog/BlogCardCover'
-import '@/components/compress/HomePage.css'
-import '@/styles/cms-page.css'
-import '@/styles/BlogListPage.css'
 
 type Lang = 'id' | 'en'
 

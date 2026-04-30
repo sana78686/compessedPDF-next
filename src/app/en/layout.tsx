@@ -4,6 +4,10 @@ import SiteFooterIsland from '@/components/site/SiteFooterIsland'
 import Breadcrumbs from '@/components/site/Breadcrumbs'
 import { getPages, getLegalNav } from '@/lib/cms/server'
 import '@/components/compress/HomePage.css'
+import '@/styles/cms-page.css'
+import '@/styles/BlogListPage.css'
+import '@/components/site/Footer.css'
+import '@/components/site/Breadcrumbs.css'
 
 export const revalidate = 60
 
